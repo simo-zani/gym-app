@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GymApp — Mockup Allenamento</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+<style>
+  *,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg-0: #060b1a;
+    --bg-1: #0a1228;
+    --bg-2: #121d3d;
+    --bg-3: #1a2a52;
+    --blue-glow: #3b82f6;
+    --blue-soft: #60a5fa;
+    --blue-deep: #1e3a8a;
+    --green: #10b981;
+    --green-glow: #34d399;
+    --red: #ef4444;
+    --red-glow: #f87171;
+    --amber: #f59e0b;
+    --text-0: #f8fafc;
+    --text-1: #cbd5e1;
+    --text-2: #64748b;
+    --border: rgba(96, 165, 250, 0.15);
+    --border-strong: rgba(96, 165, 250, 0.3);
+  }
+  body {
+    font-family: 'Inter', -apple-system, system-ui, sans-serif;
+    background: radial-gradient(ellipse at top, #0f1a3a 0%, #060b1a 60%);
+    min-height: 100vh;
+    color: var(--text-0);
+    padding: 30px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+  }
+  .header-info {
+    text-align: center;
+    max-width: 600px;
+  }
+  .header-info h1 {
+    font-size: 22px;
+    font-weight: 800;
+    margin-bottom: 6px;
+    background: linear-gradient(135deg, #60a5fa, #a78bfa);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .header-info p {
+    color: var(--text-2);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .frames {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    justify-content: center;
+    align-items: flex-start;
+  }
+  .phone {
+    width: 380px;
+    height: 780px;
+    background: var(--bg-0);
+    border-radius: 44px;
+    border: 8px solid #1a1a1a;
+    box-shadow:
+      0 0 0 2px #2a2a2a,
+      0 30px 80px rgba(0,0,0,0.6),
+      0 0 60px rgba(59, 130, 246, 0.08);
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+  .notch {
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 110px;
+    height: 28px;
+    background: #000;
+    border-radius: 20px;
+    z-index: 100;
+  }
+  .screen-label {
+    text-align: center;
+    color: var(--text-2);
+    font-size: 12px;
+    font-weight: 600;
+    margin-top: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .screen {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-0);
+  }
+  .screen::-webkit-scrollbar { width: 0; }
+  .status-bar {
+    height: 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding: 0 26px 8px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .status-icons {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    font-size: 11px;
+  }
+  .top-bar {
+    padding: 14px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+  }
+  .back-btn {
+    width: 36px; height: 36px;
+    border-radius: 12px;
+    background: var(--bg-2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-1);
+    font-size: 18px;
+    cursor: pointer;
+  }
+  .workout-title { font-size: 13px; color: var(--text-2); font-weight: 500; }
+  .workout-name { font-size: 15px; font-weight: 700; color: var(--text-0); }
+  .menu-dots {
+    width: 36px; height: 36px;
+    border-radius: 12px;
+    background: var(--bg-2);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-1);
+    font-weight: 800;
+    letter-spacing: 1px;
+    cursor: pointer;
+  }
+
+  /* SCHERMATA 1: Esercizio attivo - REPS */
+  .exercise-content {
+    padding: 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .progress-strip {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 4px;
+  }
+  .progress-pip {
+    flex: 1;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--bg-2);
+  }
+  .progress-pip.done { background: var(--green); }
+  .progress-pip.active {
+    background: var(--blue-soft);
+    box-shadow: 0 0 8px var(--blue-soft);
+  }
+  .exercise-card {
+    background: linear-gradient(145deg, var(--bg-1), var(--bg-2));
+    border: 1px solid var(--border-strong);
+    border-radius: 20px;
+    padding: 22px;
+    position: relative;
+    overflow: hidden;
+  }
+  .exercise-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--blue-glow), transparent);
+  }
+  .ex-counter {
+    color: var(--blue-soft);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .ex-name {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--text-0);
+    margin-bottom: 14px;
+    line-height: 1.15;
+  }
+  .ex-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+  }
+  .stat-block {
+    background: rgba(6, 11, 26, 0.6);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 12px 8px;
+    text-align: center;
+  }
+  .stat-label {
+    font-size: 10px;
+    color: var(--text-2);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .stat-value {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--text-0);
+  }
+  .stat-unit {
+    font-size: 11px;
+    color: var(--text-2);
+    margin-left: 2px;
+  }
+
+  .set-progress {
+    background: var(--bg-1);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 18px;
+  }
+  .set-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+  }
+  .set-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-0);
+  }
+  .set-sub {
+    font-size: 12px;
+    color: var(--text-2);
+  }
+  .set-dots {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+  .set-dot {
+    flex: 1;
+    height: 38px;
+    border-radius: 10px;
+    background: var(--bg-3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--text-2);
+    transition: all 0.2s;
+  }
+  .set-dot.done {
+    background: linear-gradient(135deg, var(--green), #059669);
+    color: white;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+  }
+  .set-dot.current {
+    background: linear-gradient(135deg, var(--blue-glow), var(--blue-deep));
+    color: white;
+    box-shadow: 0 0 0 2px var(--blue-soft), 0 4px 16px rgba(59, 130, 246, 0.4);
+    animation: pulseDot 2s ease-in-out infinite;
+  }
+  @keyframes pulseDot {
+    0%, 100% { box-shadow: 0 0 0 2px var(--blue-soft), 0 4px 16px rgba(59, 130, 246, 0.4); }
+    50% { box-shadow: 0 0 0 2px var(--blue-soft), 0 4px 24px rgba(59, 130, 246, 0.7); }
+  }
+
+  .weight-edit {
+    background: var(--bg-1);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .weight-edit-label {
+    font-size: 12px;
+    color: var(--text-2);
+    font-weight: 600;
+  }
+  .weight-edit-value {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--text-0);
+  }
+  .weight-controls {
+    display: flex;
+    gap: 8px;
+  }
+  .weight-btn {
+    width: 32px; height: 32px;
+    border-radius: 10px;
+    background: var(--bg-3);
+    color: var(--text-0);
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  .bottom-action {
+    padding: 16px 20px 24px;
+    border-top: 1px solid var(--border);
+    background: var(--bg-0);
+  }
+  .primary-btn {
+    width: 100%;
+    height: 64px;
+    border-radius: 20px;
+    border: none;
+    font-size: 17px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: transform 0.15s;
+  }
+  .primary-btn:active { transform: scale(0.97); }
+  .btn-green {
+    background: linear-gradient(135deg, var(--green-glow), var(--green));
+    color: white;
+    box-shadow: 0 8px 24px rgba(16, 185, 129, 0.35), inset 0 1px 0 rgba(255,255,255,0.3);
+  }
+  .btn-red {
+    background: linear-gradient(135deg, var(--red-glow), var(--red));
+    color: white;
+    box-shadow: 0 8px 24px rgba(239, 68, 68, 0.35), inset 0 1px 0 rgba(255,255,255,0.3);
+  }
+  .btn-blue {
+    background: linear-gradient(135deg, var(--blue-soft), var(--blue-glow));
+    color: white;
+    box-shadow: 0 8px 24px rgba(59, 130, 246, 0.35), inset 0 1px 0 rgba(255,255,255,0.3);
+  }
+  .secondary-action {
+    text-align: center;
+    color: var(--text-2);
+    font-size: 13px;
+    margin-top: 14px;
+    font-weight: 500;
+  }
+  .secondary-action span { color: var(--blue-soft); font-weight: 600; }
+
+  /* SCHERMATA 2: Recupero */
+  .rest-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding: 30px 20px;
+    background: radial-gradient(circle at center, rgba(16, 185, 129, 0.08), transparent 60%);
+  }
+  .rest-label {
+    color: var(--green-glow);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-top: 10px;
+  }
+  .ring-wrap {
+    position: relative;
+    width: 260px;
+    height: 260px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .ring-svg {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+  }
+  .ring-bg { stroke: var(--bg-2); fill: none; stroke-width: 14; }
+  .ring-fg {
+    stroke: url(#greenGrad);
+    fill: none;
+    stroke-width: 14;
+    stroke-linecap: round;
+    filter: drop-shadow(0 0 12px rgba(52, 211, 153, 0.5));
+  }
+  .ring-center {
+    position: relative;
+    text-align: center;
+    z-index: 2;
+  }
+  .ring-time {
+    font-size: 72px;
+    font-weight: 900;
+    color: var(--text-0);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -2px;
+  }
+  .ring-sub {
+    font-size: 13px;
+    color: var(--text-2);
+    margin-top: 4px;
+    font-weight: 500;
+  }
+  .next-up {
+    background: var(--bg-1);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 14px 16px;
+    width: 100%;
+    text-align: left;
+  }
+  .next-up-label {
+    font-size: 11px;
+    color: var(--text-2);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .next-up-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-0);
+    margin-bottom: 2px;
+  }
+  .next-up-meta {
+    font-size: 12px;
+    color: var(--blue-soft);
+    font-weight: 500;
+  }
+  .rest-buttons {
+    width: 100%;
+    display: flex;
+    gap: 10px;
+  }
+  .rest-adj-btn {
+    flex: 1;
+    height: 48px;
+    border-radius: 14px;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    color: var(--text-1);
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .skip-btn {
+    width: 100%;
+    height: 56px;
+    border-radius: 18px;
+    background: var(--bg-2);
+    border: 1px solid var(--border-strong);
+    color: var(--text-0);
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  /* SCHERMATA 3: Esercizio a tempo */
+  .time-ring-wrap {
+    position: relative;
+    width: 260px;
+    height: 260px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .ring-time-active { stroke: url(#redGrad); filter: drop-shadow(0 0 14px rgba(248, 113, 113, 0.5)); }
+  .red-label { color: var(--red-glow); }
+  .time-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding: 30px 20px;
+    background: radial-gradient(circle at center, rgba(239, 68, 68, 0.08), transparent 60%);
+  }
+
+  .legend {
+    max-width: 1280px;
+    margin-top: 20px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px 24px;
+  }
+  .legend h2 {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--blue-soft);
+    margin-bottom: 12px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .legend ul {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 10px;
+  }
+  .legend li {
+    color: var(--text-1);
+    font-size: 13px;
+    line-height: 1.55;
+    padding-left: 18px;
+    position: relative;
+  }
+  .legend li::before {
+    content: '▸';
+    position: absolute;
+    left: 0;
+    color: var(--blue-soft);
+  }
+</style>
+</head>
+<body>
+
+<div class="header-info">
+  <h1>GymApp · Mockup schermate chiave</h1>
+  <p>Tre stati del flusso di allenamento. Tap "Fatto" per simulare la transizione.</p>
+</div>
+
+<div class="frames">
+
+  <!-- ===== SCHERMATA 1: ESERCIZIO ATTIVO (REPS) ===== -->
+  <div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="screen">
+        <div class="status-bar">
+          <span>09:42</span>
+          <div class="status-icons"><span>📶</span><span>🔋</span></div>
+        </div>
+        <div class="top-bar">
+          <div class="back-btn">‹</div>
+          <div style="text-align:center">
+            <div class="workout-title">SCHEDA · Petto / Tricipiti</div>
+            <div class="workout-name">⏱ 24:18</div>
+          </div>
+          <div class="menu-dots">•••</div>
+        </div>
+
+        <div class="exercise-content">
+          <div class="progress-strip">
+            <div class="progress-pip done"></div>
+            <div class="progress-pip done"></div>
+            <div class="progress-pip active"></div>
+            <div class="progress-pip"></div>
+            <div class="progress-pip"></div>
+            <div class="progress-pip"></div>
+          </div>
+
+          <div class="exercise-card">
+            <div class="ex-counter">Esercizio 3 di 6</div>
+            <div class="ex-name">Panca piana<br/>con bilanciere</div>
+            <div class="ex-stats">
+              <div class="stat-block">
+                <div class="stat-label">Serie</div>
+                <div class="stat-value">4</div>
+              </div>
+              <div class="stat-block">
+                <div class="stat-label">Reps</div>
+                <div class="stat-value">10</div>
+              </div>
+              <div class="stat-block">
+                <div class="stat-label">Recupero</div>
+                <div class="stat-value">90<span class="stat-unit">s</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="set-progress">
+            <div class="set-header">
+              <div class="set-title">Serie in corso</div>
+              <div class="set-sub">2 di 4</div>
+            </div>
+            <div class="set-dots">
+              <div class="set-dot done">✓</div>
+              <div class="set-dot current">2</div>
+              <div class="set-dot">3</div>
+              <div class="set-dot">4</div>
+            </div>
+          </div>
+
+          <div class="weight-edit">
+            <div>
+              <div class="weight-edit-label">PESO</div>
+              <div class="weight-edit-value">60 kg</div>
+            </div>
+            <div class="weight-controls">
+              <div class="weight-btn">−</div>
+              <div class="weight-btn">+</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bottom-action">
+          <button class="primary-btn btn-green">
+            ✓ Fatto · avvia recupero
+          </button>
+          <div class="secondary-action">
+            Reps reali diverse? <span>Modifica</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="screen-label">1 · Esercizio attivo (reps)</div>
+  </div>
+
+  <!-- ===== SCHERMATA 2: RECUPERO ===== -->
+  <div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="screen">
+        <div class="status-bar">
+          <span>09:43</span>
+          <div class="status-icons"><span>📶</span><span>🔋</span></div>
+        </div>
+        <div class="top-bar">
+          <div class="back-btn">‹</div>
+          <div style="text-align:center">
+            <div class="workout-title">SCHEDA · Petto / Tricipiti</div>
+            <div class="workout-name">⏱ 25:34</div>
+          </div>
+          <div class="menu-dots">•••</div>
+        </div>
+
+        <div class="rest-content">
+          <div class="rest-label">⏸ Recupero</div>
+
+          <div class="ring-wrap">
+            <svg class="ring-svg" viewBox="0 0 200 200">
+              <defs>
+                <linearGradient id="greenGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#34d399" />
+                  <stop offset="100%" stop-color="#10b981" />
+                </linearGradient>
+              </defs>
+              <circle class="ring-bg" cx="100" cy="100" r="86" />
+              <circle class="ring-fg" cx="100" cy="100" r="86"
+                stroke-dasharray="540"
+                stroke-dashoffset="200" />
+            </svg>
+            <div class="ring-center">
+              <div class="ring-time">0:53</div>
+              <div class="ring-sub">di 1:30</div>
+            </div>
+          </div>
+
+          <div class="next-up">
+            <div class="next-up-label">Prossimo</div>
+            <div class="next-up-name">Panca piana · serie 3 di 4</div>
+            <div class="next-up-meta">10 rep · 60 kg</div>
+          </div>
+
+          <div class="rest-buttons">
+            <button class="rest-adj-btn">−15s</button>
+            <button class="rest-adj-btn">+15s</button>
+          </div>
+
+          <button class="skip-btn btn-blue" style="height:60px; border:none">
+            ⏭ Salta recupero
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="screen-label">2 · Recupero (timer verde)</div>
+  </div>
+
+  <!-- ===== SCHERMATA 3: ESERCIZIO A TEMPO ===== -->
+  <div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="screen">
+        <div class="status-bar">
+          <span>09:55</span>
+          <div class="status-icons"><span>📶</span><span>🔋</span></div>
+        </div>
+        <div class="top-bar">
+          <div class="back-btn">‹</div>
+          <div style="text-align:center">
+            <div class="workout-title">SCHEDA · Petto / Tricipiti</div>
+            <div class="workout-name">⏱ 37:02</div>
+          </div>
+          <div class="menu-dots">•••</div>
+        </div>
+
+        <div class="time-content">
+          <div class="rest-label red-label">▶ Esercizio in corso</div>
+
+          <div class="time-ring-wrap">
+            <svg class="ring-svg" viewBox="0 0 200 200">
+              <defs>
+                <linearGradient id="redGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#f87171" />
+                  <stop offset="100%" stop-color="#ef4444" />
+                </linearGradient>
+              </defs>
+              <circle class="ring-bg" cx="100" cy="100" r="86" />
+              <circle class="ring-tg ring-time-active" cx="100" cy="100" r="86"
+                fill="none"
+                stroke-width="14"
+                stroke-linecap="round"
+                stroke-dasharray="540"
+                stroke-dashoffset="360" />
+            </svg>
+            <div class="ring-center">
+              <div class="ring-time" style="color:#f87171">0:18</div>
+              <div class="ring-sub">di 0:45 · plank</div>
+            </div>
+          </div>
+
+          <div class="next-up">
+            <div class="next-up-label">Esercizio · serie 1 di 3</div>
+            <div class="next-up-name">Plank addominale</div>
+            <div class="next-up-meta">45 sec · recupero 30s</div>
+          </div>
+
+          <button class="primary-btn btn-red" style="margin-top:auto">
+            ⏹ Stop · avvia recupero
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="screen-label">3 · Esercizio a tempo (timer rosso)</div>
+  </div>
+
+</div>
+
+<div class="legend">
+  <h2>Note sul design</h2>
+  <ul>
+    <li>Palette blu notte (#060b1a / #0a1228) con accent #60a5fa per la navigazione e i tap point.</li>
+    <li>Verde (#10b981) = "tutto ok, riposo in corso". Rosso (#ef4444) = "sotto sforzo, esercizio attivo".</li>
+    <li>Il bottone principale è sempre uno e occupa tutta la base — usabile con un pollice solo, anche con mani sudate.</li>
+    <li>Il pip strip in alto mostra il progresso totale della scheda (esercizi completati / totali).</li>
+    <li>I "set dots" mostrano la serie attuale dentro l'esercizio (pulsa quella in corso).</li>
+    <li>Il timer di recupero ha pulsanti ±15s e "salta" — sempre raggiungibili senza scorrere.</li>
+    <li>Tipografia tabular-nums sui timer per evitare il salto visivo dei numeri.</li>
+    <li>"Modifica reps" sotto il CTA: se hai fatto 8 invece di 10, lo registri al volo prima del recupero.</li>
+  </ul>
+</div>
+
+</body>
+</html>
