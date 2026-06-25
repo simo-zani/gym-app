@@ -24,6 +24,3 @@ dist-ssr
 .env
 .env.local
 .env.*.local
-
-# Fasi di sviluppo (note di lavoro interne, non da versionare)
-fasi/
