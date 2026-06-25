@@ -48,7 +48,7 @@ Quando una fase è completata, aggiorna `AGGIORNAMENTO_PROGETTO.md` (lo fa Claud
 ## Convenzioni di progetto
 
 - **Lingua codice/commenti**: inglese
-- **Lingua UI**: italiano
+- **Lingua UI**: italiano di default, ma **tutte le scritte passano da i18n** (sistema di traduzione reattivo it/en, estendibile ad altre lingue, cambio lingua senza refresh — vedi `fasi/05_fase5_rifiniture.md` §5.11). Nessuna stringa hardcoded nei componenti.
 - **Branch**: `main` (deploy) + branch per fase (es. `phase-2-crud`)
 - **Commit**: convenzionali (`feat:`, `fix:`, `chore:`, `docs:`)
 - **Naming DB**: snake_case (Postgres convention)
