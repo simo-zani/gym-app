@@ -63,7 +63,9 @@
     "optionsMenuLabel": "Plan options",
     "openPlanLabel": "Open plan",
     "exerciseRemoved": "Exercise removed",
-    "loadingError": "Error loading plans."
+    "loadingError": "Error loading plans.",
+    "favorites": "Favorites",
+    "otherPlans": "Other Plans"
   },
   "exercises": {
     "title": "Exercises",

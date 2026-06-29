@@ -86,19 +86,54 @@ export function PlansPage() {
           />
         )}
 
-        {data && data.length > 0 && (
-          <div className="flex flex-col gap-3">
-            {data.map((plan) => (
-              <PlanCard
-                key={plan.id}
-                plan={plan}
-                onDuplicate={(p) => duplicateMut.mutate(p.id)}
-                onArchive={(p) => archiveMut.mutate({ id: p.id, is_archived: true })}
-                onDelete={(p) => setDeleting(p)}
-              />
-            ))}
-          </div>
-        )}
+        {data && data.length > 0 && (() => {
+          const favorites = data.filter((p) => p.is_favorite);
+          const others = data.filter((p) => !p.is_favorite);
+
+          return (
+            <div className="flex flex-col gap-6">
+              {favorites.length > 0 && (
+                <div className="flex flex-col gap-3">
+                  <h2 className="px-1 text-xs font-semibold uppercase tracking-widest text-amber-400">
+                    {t('plans.favorites')}
+                  </h2>
+                  <div className="flex flex-col gap-3">
+                    {favorites.map((plan) => (
+                      <PlanCard
+                        key={plan.id}
+                        plan={plan}
+                        onDuplicate={(p) => duplicateMut.mutate(p.id)}
+                        onArchive={(p) => archiveMut.mutate({ id: p.id, is_archived: true })}
+                        onDelete={(p) => setDeleting(p)}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {others.length > 0 && (
+                <div className="flex flex-col gap-3">
+                  {favorites.length > 0 && (
+                    <h2 className="px-1 text-xs font-semibold uppercase tracking-widest text-slate-500">
+                      {t('plans.otherPlans')}
+                    </h2>
+                  )}
+                  <div className="flex flex-col gap-3">
+                    {others.map((plan) => (
+                      <PlanCard
+                        key={plan.id}
+                        plan={plan}
+                        onDuplicate={(p) => duplicateMut.mutate(p.id)}
+                        onArchive={(p) => archiveMut.mutate({ id: p.id, is_archived: true })}
+                        onDelete={(p) => setDeleting(p)}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })()}
       </AppShell>
 
       <Fab onClick={openCreate} label={t('plans.newPlan')} />

@@ -33,6 +33,7 @@ export interface WorkoutPlan {
   name: string;
   notes: string | null;
   is_archived: boolean;
+  is_favorite: boolean;
   created_at: string;
   updated_at: string;
 }

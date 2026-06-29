@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Search, Dumbbell, ChevronRight } from 'lucide-react';
+import { Search, Dumbbell, ChevronRight, Trash2 } from 'lucide-react';
+import { useSwipeAction } from '@/hooks/useSwipeAction';
 import { AppShell } from '@/components/layout/AppShell';
 import { Fab } from '@/components/ui/Fab';
 import { Spinner } from '@/components/ui/Spinner';
@@ -149,24 +150,11 @@ export function ExercisesPage() {
           <ul className="flex flex-col gap-2">
             {data.map((ex) => (
               <li key={ex.id}>
-                <button
-                  onClick={() => setDetail(ex)}
-                  className="flex w-full items-center gap-3 rounded-xl border border-bg-2 bg-bg-1 px-3.5 py-3 text-left transition hover:border-bg-3"
-                >
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold text-slate-100">{ex.name}</p>
-                    <p className="mt-0.5 text-xs text-slate-400">
-                      {muscleGroupLabel(ex.muscle_group)} ·{' '}
-                      {ex.owner_id !== null ? (
-                        <span className="text-amber-400">{t('exercises.custom')}</span>
-                      ) : (
-                        t('exercises.wger')
-                      )}
-                    </p>
-                  </div>
-                  <MuscleGroupBadge group={ex.muscle_group} />
-                  <ChevronRight size={18} className="text-slate-500" />
-                </button>
+                <SwipeableExerciseItem
+                  ex={ex}
+                  onDetail={setDetail}
+                  onDelete={setDeleting}
+                />
               </li>
             ))}
           </ul>
@@ -212,5 +200,67 @@ export function ExercisesPage() {
         error={deleteError}
       />
     </>
+  );
+}
+
+function SwipeableExerciseItem({
+  ex,
+  onDetail,
+  onDelete,
+}: {
+  ex: Exercise;
+  onDetail: (ex: Exercise) => void;
+  onDelete: (ex: Exercise) => void;
+}) {
+  const { t } = useTranslation();
+  const isCustom = ex.owner_id !== null;
+
+  const { translateX, isSwiping, swipeHandlers } = useSwipeAction({
+    onSwipeLeft: isCustom ? () => onDelete(ex) : undefined,
+  });
+
+  return (
+    <div className="relative overflow-hidden rounded-xl">
+      {isCustom && (
+        <div className="absolute inset-0 flex justify-end rounded-xl bg-bg-0 pointer-events-none">
+          <div
+            className="flex items-center justify-end bg-dangerRed/10 px-5 text-dangerRed transition-opacity duration-150"
+            style={{ opacity: translateX < -15 ? 1 : 0 }}
+          >
+            <Trash2 size={18} className="transition-transform duration-100" style={{ transform: `scale(${Math.min(1.2, 0.6 + Math.abs(translateX) / 100)})` }} />
+          </div>
+        </div>
+      )}
+
+      <div
+        {...(isCustom ? swipeHandlers : {})}
+        className={`relative flex w-full items-center gap-3 rounded-xl border border-bg-2 bg-bg-1 px-3.5 py-3 text-left transition select-none ${
+          isSwiping ? '' : 'transition-transform duration-200 hover:border-bg-3'
+        }`}
+        style={{
+          transform: `translateX(${translateX}px)`,
+          touchAction: 'pan-y',
+        }}
+      >
+        <button
+          onClick={() => onDetail(ex)}
+          className="flex flex-1 items-center gap-3 text-left min-w-0"
+        >
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-semibold text-slate-100">{ex.name}</p>
+            <p className="mt-0.5 text-xs text-slate-400">
+              {muscleGroupLabel(ex.muscle_group)} ·{' '}
+              {isCustom ? (
+                <span className="text-amber-400">{t('exercises.custom')}</span>
+              ) : (
+                t('exercises.wger')
+              )}
+            </p>
+          </div>
+          <MuscleGroupBadge group={ex.muscle_group} />
+          <ChevronRight size={18} className="text-slate-500 flex-none" />
+        </button>
+      </div>
+    </div>
   );
 }

@@ -110,8 +110,22 @@ export function useUpdatePlan() {
     mutationFn: async ({
       id,
       ...patch
-    }: { id: string } & Partial<Pick<WorkoutPlan, 'name' | 'notes' | 'is_archived'>>): Promise<void> => {
+    }: { id: string } & Partial<Pick<WorkoutPlan, 'name' | 'notes' | 'is_archived' | 'is_favorite'>>): Promise<void> => {
       const { error } = await supabase.from('workout_plans').update(patch).eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: plansKeys.all }),
+  });
+}
+
+export function useToggleFavorite() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, isFavorite }: { id: string; isFavorite: boolean }): Promise<void> => {
+      const { error } = await supabase
+        .from('workout_plans')
+        .update({ is_favorite: isFavorite })
+        .eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: plansKeys.all }),

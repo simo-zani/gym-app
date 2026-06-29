@@ -63,7 +63,9 @@
     "optionsMenuLabel": "Opzioni scheda",
     "openPlanLabel": "Apri scheda",
     "exerciseRemoved": "Esercizio rimosso",
-    "loadingError": "Errore nel caricamento delle schede."
+    "loadingError": "Errore nel caricamento delle schede.",
+    "favorites": "Preferiti",
+    "otherPlans": "Altre schede"
   },
   "exercises": {
     "title": "Esercizi",
