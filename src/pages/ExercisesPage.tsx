@@ -98,7 +98,7 @@ export function ExercisesPage() {
     <>
       <AppShell
         title={t('exercises.title')}
-        subtitle={data ? `${data.length} ${t('exercises.exerciseCountSubtitle').split(' · ')[0]} · ${customCount} ${t('exercises.custom')}` : undefined}
+        subtitle={data ? `${data.length} ${t('common.search')} · ${customCount} ${t('exercises.custom')}` : undefined}
       >
         {/* Search */}
         <div className="mb-3 flex items-center gap-2 rounded-xl border border-bg-2 bg-bg-1 px-3.5 py-2.5">
