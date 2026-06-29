@@ -73,7 +73,7 @@ export function PlansPage() {
         {isLoading && <Spinner />}
         {isError && (
           <p className="rounded-lg bg-dangerRed/10 px-3 py-2 text-sm text-dangerRed">
-            {t('common.error')} nel caricamento delle schede.
+            {t('common.loadingError')}
           </p>
         )}
 
