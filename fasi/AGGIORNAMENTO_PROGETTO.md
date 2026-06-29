@@ -18,6 +18,7 @@
 | 0 — Pianificazione | ✅ Completa | — | — | Mockup creato, piano scritto |
 | 1 — Fondamenta | 🟡 In corso | 2026-06-25 | — | Codice scaffolding fatto; restano progetto Supabase reale + deploy Vercel (non ancora creati) |
 | 2 — CRUD esercizi & schede | 🟡 In corso | 2026-06-25 | — | Codice completo (UI + data layer + seed wger); test end-to-end in sospeso finché manca il backend |
+| 2.5 - Traduzioni scritte gia' inserite prima che sia troppo tardi (seguire fase 5.11)
 | 3 — Modalità allenamento | ⏸ Non iniziata | — | — | — |
 | 4 — Offline-first | ⏸ Non iniziata | — | — | — |
 | 5 — Rifiniture | ⏸ Non iniziata | — | — | A piacere |
