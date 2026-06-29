@@ -162,9 +162,9 @@ export function PlanEditorPage() {
   if (planQuery.isError || !planQuery.data) {
     return (
       <div className="mx-auto min-h-full w-full max-w-md bg-bg-0 p-6 text-center">
-        <p className="text-sm text-dangerRed">Scheda non trovata.</p>
+        <p className="text-sm text-dangerRed">{t('plans.notFound')}</p>
         <Button variant="ghost" onClick={() => navigate('/')} className="mt-4">
-          Torna alle schede
+          {t('plans.backToPlans')}
         </Button>
       </div>
     );
@@ -359,15 +359,16 @@ export function PlanEditorPage() {
 
 function MenuItem({
   icon: Icon,
-  label,
+  labelKey,
   onClick,
   danger,
 }: {
   icon: typeof Copy;
-  label: string;
+  labelKey: string;
   onClick: () => void;
   danger?: boolean;
 }) {
+  const { t } = useTranslation();
   return (
     <button
       onClick={onClick}
@@ -376,7 +377,7 @@ function MenuItem({
       }`}
     >
       <Icon size={16} />
-      {label}
+      {t(labelKey)}
     </button>
   );
 }
