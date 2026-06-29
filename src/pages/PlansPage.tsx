@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useTranslation } from 'react-i18next';
 import { ClipboardList } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { Fab } from '@/components/ui/Fab';
@@ -22,10 +23,12 @@ import {
   type PlanListItem,
 } from '@/features/plans/hooks';
 
-const nameSchema = z.object({ name: z.string().min(1, 'Nome obbligatorio') });
-type NameForm = z.infer<typeof nameSchema>;
+const nameSchema = (t: (key: string) => string) =>
+  z.object({ name: z.string().min(1, t('auth.validationNameRequired')) });
+type NameForm = z.infer<ReturnType<typeof nameSchema>>;
 
 export function PlansPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { data, isLoading, isError } = usePlans();
   const createMut = useCreatePlan();
@@ -42,7 +45,7 @@ export function PlansPage() {
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<NameForm>({ resolver: zodResolver(nameSchema) });
+  } = useForm<NameForm>({ resolver: zodResolver(nameSchema(t)) });
 
   function openCreate() {
     reset({ name: '' });
@@ -57,29 +60,29 @@ export function PlansPage() {
       setCreateOpen(false);
       navigate(`/plans/${plan.id}`);
     } catch (err) {
-      setCreateError(err instanceof Error ? err.message : 'Errore imprevisto');
+      setCreateError(err instanceof Error ? err.message : t('common.unexpectedError'));
     }
   });
 
   return (
     <>
       <AppShell
-        title="Le mie schede"
-        subtitle={data ? `${data.length} ${data.length === 1 ? 'scheda' : 'schede'}` : undefined}
+        title={t('plans.myPlans')}
+        subtitle={data ? `${data.length} ${data.length === 1 ? t('plans.exercise') : t('plans.exercises_plural')}` : undefined}
       >
         {isLoading && <Spinner />}
         {isError && (
           <p className="rounded-lg bg-dangerRed/10 px-3 py-2 text-sm text-dangerRed">
-            Errore nel caricamento delle schede.
+            {t('common.error')} nel caricamento delle schede.
           </p>
         )}
 
         {data && data.length === 0 && (
           <EmptyState
             icon={ClipboardList}
-            title="Nessuna scheda"
-            description="Crea la tua prima scheda di allenamento."
-            action={<Button onClick={openCreate}>Crea scheda</Button>}
+            title={t('plans.emptyState')}
+            description={t('plans.emptyStateHint')}
+            action={<Button onClick={openCreate}>{t('plans.createPlan')}</Button>}
           />
         )}
 
@@ -98,14 +101,14 @@ export function PlansPage() {
         )}
       </AppShell>
 
-      <Fab onClick={openCreate} label="Nuova scheda" />
+      <Fab onClick={openCreate} label={t('plans.newPlan')} />
 
-      <Modal open={createOpen} onClose={() => setCreateOpen(false)} title="Nuova scheda">
+      <Modal open={createOpen} onClose={() => setCreateOpen(false)} title={t('plans.newPlan')}>
         <form onSubmit={submitCreate} className="flex flex-col gap-4">
           <Input
             id="plan-name"
-            label="Nome scheda"
-            placeholder="Es. Petto / Tricipiti"
+            label={t('plans.name')}
+            placeholder={t('plans.namePlaceholder')}
             autoFocus
             error={errors.name?.message}
             {...register('name')}
@@ -117,10 +120,10 @@ export function PlansPage() {
           )}
           <div className="flex gap-3">
             <Button type="button" variant="ghost" onClick={() => setCreateOpen(false)} className="flex-1">
-              Annulla
+              {t('common.cancel')}
             </Button>
             <Button type="submit" loading={createMut.isPending} className="flex-1">
-              Crea
+              {t('common.create')}
             </Button>
           </div>
         </form>
@@ -134,9 +137,9 @@ export function PlansPage() {
           await deleteMut.mutateAsync(deleting.id);
           setDeleting(null);
         }}
-        title="Eliminare la scheda?"
-        message={`"${deleting?.name}" e i suoi esercizi verranno eliminati.`}
-        confirmLabel="Elimina"
+        title={t('plans.deleteConfirm')}
+        message={`"${deleting?.name}" ${t('plans.deleteConfirmWarning')}`}
+        confirmLabel={t('common.delete')}
         danger
         loading={deleteMut.isPending}
       />

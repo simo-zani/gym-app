@@ -3,21 +3,29 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Dumbbell } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/features/auth/useAuth';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 
-const schema = z.object({
-  email: z.string().email('Email non valida'),
-  password: z.string().min(6, 'Minimo 6 caratteri'),
-});
+const createSchema = (t: (key: string) => string) =>
+  z.object({
+    email: z.string().email(t('auth.validationEmailInvalid')),
+    password: z.string().min(6, t('auth.validationMinChars')),
+  });
 
-type FormValues = z.infer<typeof schema>;
+type FormValues = {
+  email: string;
+  password: string;
+};
 
 export function LoginPage() {
+  const { t } = useTranslation();
   const { signIn, signUp } = useAuth();
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
   const [serverError, setServerError] = useState<string | null>(null);
+
+  const schema = createSchema(t);
 
   const {
     register,
@@ -34,7 +42,7 @@ export function LoginPage() {
         await signUp(email, password);
       }
     } catch (err) {
-      setServerError(err instanceof Error ? err.message : 'Errore imprevisto');
+      setServerError(err instanceof Error ? err.message : t('common.unexpectedError'));
     }
   });
 
@@ -44,9 +52,9 @@ export function LoginPage() {
         <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-blueGlow/15 text-blueSoft">
           <Dumbbell size={32} />
         </div>
-        <h1 className="text-2xl font-bold text-slate-100">GymApp</h1>
+        <h1 className="text-2xl font-bold text-slate-100">{t('auth.appTitle')}</h1>
         <p className="text-sm text-slate-400">
-          {mode === 'signin' ? 'Accedi al tuo account' : 'Crea un nuovo account'}
+          {mode === 'signin' ? t('auth.loginPrompt') : t('auth.signupPrompt')}
         </p>
       </div>
 
@@ -54,8 +62,8 @@ export function LoginPage() {
         <Input
           id="email"
           type="email"
-          label="Email"
-          placeholder="tu@esempio.it"
+          label={t('auth.email')}
+          placeholder={t('auth.emailPlaceholder')}
           autoComplete="email"
           error={errors.email?.message}
           {...register('email')}
@@ -63,8 +71,8 @@ export function LoginPage() {
         <Input
           id="password"
           type="password"
-          label="Password"
-          placeholder="••••••••"
+          label={t('auth.password')}
+          placeholder={t('auth.passwordPlaceholder')}
           autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
           error={errors.password?.message}
           {...register('password')}
@@ -77,7 +85,7 @@ export function LoginPage() {
         )}
 
         <Button type="submit" loading={isSubmitting} className="mt-2">
-          {mode === 'signin' ? 'Accedi' : 'Registrati'}
+          {mode === 'signin' ? t('auth.login') : t('auth.signup')}
         </Button>
       </form>
 
@@ -89,9 +97,7 @@ export function LoginPage() {
         }}
         className="mt-6 text-center text-sm text-slate-400 transition hover:text-blueSoft"
       >
-        {mode === 'signin'
-          ? 'Non hai un account? Registrati'
-          : 'Hai già un account? Accedi'}
+        {mode === 'signin' ? t('auth.noAccount') : t('auth.hasAccount')}
       </button>
     </div>
   );

@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronRight, MoreVertical, Copy, Archive, Trash2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { MuscleGroupBadge } from '@/components/ui/MuscleGroupBadge';
 import type { PlanListItem } from './hooks';
 
@@ -12,6 +13,7 @@ interface PlanCardProps {
 }
 
 export function PlanCard({ plan, onDuplicate, onArchive, onDelete }: PlanCardProps) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -33,21 +35,21 @@ export function PlanCard({ plan, onDuplicate, onArchive, onDelete }: PlanCardPro
         <button onClick={open} className="min-w-0 flex-1 text-left">
           <p className="truncate text-base font-bold text-slate-100">{plan.name}</p>
           <p className="mt-0.5 text-xs text-slate-400">
-            {plan.exerciseCount} {plan.exerciseCount === 1 ? 'esercizio' : 'esercizi'}
+            {plan.exerciseCount} {plan.exerciseCount === 1 ? t('plans.exercise') : t('plans.exercises')}
           </p>
         </button>
 
         <div ref={menuRef} className="relative flex items-center gap-1">
           <button
             onClick={() => setMenuOpen((o) => !o)}
-            aria-label="Opzioni scheda"
+            aria-label={t('plans.optionsMenuLabel')}
             className="rounded-lg p-1.5 text-slate-400 transition hover:bg-bg-3 hover:text-slate-100"
           >
             <MoreVertical size={18} />
           </button>
           <button
             onClick={open}
-            aria-label="Apri scheda"
+            aria-label={t('plans.openPlanLabel')}
             className="flex h-8 w-8 items-center justify-center rounded-lg bg-bg-3 text-blueSoft"
           >
             <ChevronRight size={18} />
@@ -55,11 +57,11 @@ export function PlanCard({ plan, onDuplicate, onArchive, onDelete }: PlanCardPro
 
           {menuOpen && (
             <div className="absolute right-0 top-10 z-20 w-44 overflow-hidden rounded-xl border border-bg-3 bg-bg-2 shadow-xl">
-              <MenuItem icon={Copy} label="Duplica" onClick={() => { setMenuOpen(false); onDuplicate(plan); }} />
-              <MenuItem icon={Archive} label="Archivia" onClick={() => { setMenuOpen(false); onArchive(plan); }} />
+              <MenuItem icon={Copy} labelKey="plans.duplicatePlan" onClick={() => { setMenuOpen(false); onDuplicate(plan); }} />
+              <MenuItem icon={Archive} labelKey="plans.archivePlan" onClick={() => { setMenuOpen(false); onArchive(plan); }} />
               <MenuItem
                 icon={Trash2}
-                label="Elimina"
+                labelKey="common.delete"
                 danger
                 onClick={() => { setMenuOpen(false); onDelete(plan); }}
               />
@@ -81,15 +83,17 @@ export function PlanCard({ plan, onDuplicate, onArchive, onDelete }: PlanCardPro
 
 function MenuItem({
   icon: Icon,
-  label,
+  labelKey,
   onClick,
   danger,
 }: {
   icon: typeof Copy;
-  label: string;
+  labelKey: string;
   onClick: () => void;
   danger?: boolean;
 }) {
+  const { t } = useTranslation();
+
   return (
     <button
       onClick={onClick}
@@ -98,7 +102,7 @@ function MenuItem({
       }`}
     >
       <Icon size={16} />
-      {label}
+      {t(labelKey)}
     </button>
   );
 }

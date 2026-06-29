@@ -6,8 +6,8 @@
 
 ## Stato corrente
 
-**Fase attiva:** Fase 2 — CRUD esercizi & schede (codice completo, da testare end-to-end una volta creato il progetto Supabase)
-**Ultimo aggiornamento:** 2026-06-25
+**Fase attiva:** Fase 2.5 — Traduzioni (i18n) completata · Fase 2 da testare E2E
+**Ultimo aggiornamento:** 2026-06-29
 
 ---
 
@@ -18,7 +18,7 @@
 | 0 — Pianificazione | ✅ Completa | — | — | Mockup creato, piano scritto |
 | 1 — Fondamenta | 🟡 In corso | 2026-06-25 | — | Codice scaffolding fatto; restano progetto Supabase reale + deploy Vercel (non ancora creati) |
 | 2 — CRUD esercizi & schede | 🟡 In corso | 2026-06-25 | — | Codice completo (UI + data layer + seed wger); test end-to-end in sospeso finché manca il backend |
-| 2.5 - Traduzioni scritte gia' inserite prima che sia troppo tardi (seguire fase 5.11)
+| 2.5 — Traduzioni (i18n) | ✅ Completa | 2026-06-29 | 2026-06-29 | react-i18next + it/en.json; cambio lingua istantaneo da Impostazioni |
 | 3 — Modalità allenamento | ⏸ Non iniziata | — | — | — |
 | 4 — Offline-first | ⏸ Non iniziata | — | — | — |
 | 5 — Rifiniture | ⏸ Non iniziata | — | — | A piacere |
@@ -74,6 +74,14 @@ Decisioni prese in fase di pianificazione (qui per memoria, vedi anche `README.m
 > Formato: `YYYY-MM-DD — [Fase X] — Descrizione`
 
 - 2026-06-25 — [Fase 1] — Scaffolding progetto: Vite + React 18 + TS + Tailwind, routing (login/home protetta), AuthProvider Supabase (signIn/signUp/signOut), TanStack Query, UI primitives (Button/Input), AppShell. Migrazione SQL completa `supabase/migrations/0001_init.sql` (5 tabelle + trigger updated_at + RLS su tutte). `vercel.json` con rewrite SPA. `npm run build` e `tsc --noEmit` verdi.
+- 2026-06-29 — [Fase 2.5] — Internazionalizzazione (i18n) completa:
+  - Installate dipendenze: `react-i18next`, `i18next`, `i18next-browser-languagedetector`
+  - Configurazione i18next in `src/i18n/index.ts` con rilevamento automatico lingua browser e persistenza localStorage
+  - File di traduzione: `src/i18n/locales/it.json` (italiano) e `en.json` (inglese) con ~100+ chiavi organizzate per sezione (nav, auth, plans, exercises, history, profile, common, etc.)
+  - Migrati **11 file componenti** da stringhe hardcoded a `t()` calls (LoginPage, PlansPage, PlanEditorPage, ExercisesPage, ProfilePage, HistoryPage, PlanCard, PlanForm, ExerciseForm, ExerciseDetailModal, AddExerciseModal, ExerciseConfigSheet, BottomNav, MuscleGroupBadge)
+  - Aggiunto **selettore di lingua** in Impostazioni (Profile page) con cambio istantaneo senza refresh
+  - Fallback su italiano per chiavi mancanti; browser language detection (it/en)
+  - Build e TypeScript check verdi; struttura estendibile per aggiungere nuove lingue
 - 2026-06-25 — [Fase 2] — CRUD esercizi & schede completo (solo codice, backend ancora da creare):
   - **Bottom nav** a 4 tab (Schede · Esercizi · Storico · Profilo) + `TabLayout`; editor scheda a tutto schermo senza nav.
   - **AppShell** esteso: titolo custom, sottotitolo, pulsante back, footer sticky.

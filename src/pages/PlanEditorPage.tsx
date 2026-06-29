@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   DndContext,
   closestCenter,
@@ -43,11 +44,12 @@ import {
 } from '@/features/plans/hooks';
 import type { Exercise, PlanExerciseWithExercise } from '@/types/db';
 
-const renameSchema = z.object({
-  name: z.string().min(1, 'Nome obbligatorio'),
-  notes: z.string().optional(),
-});
-type RenameForm = z.infer<typeof renameSchema>;
+const renameSchema = (t: (key: string) => string) =>
+  z.object({
+    name: z.string().min(1, t('plans.name')),
+    notes: z.string().optional(),
+  });
+type RenameForm = z.infer<ReturnType<typeof renameSchema>>;
 
 interface ConfigTarget {
   exerciseId: string;
@@ -56,6 +58,7 @@ interface ConfigTarget {
 }
 
 export function PlanEditorPage() {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
@@ -94,7 +97,7 @@ export function PlanEditorPage() {
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<RenameForm>({ resolver: zodResolver(renameSchema) });
+  } = useForm<RenameForm>({ resolver: zodResolver(renameSchema(t)) });
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -179,12 +182,12 @@ export function PlanEditorPage() {
             <Pencil size={15} className="flex-none text-slate-500" />
           </button>
         }
-        subtitle="Editor scheda"
+        subtitle={t('plans.editorSubtitle')}
         action={
           <div ref={menuRef} className="relative">
             <button
               onClick={() => setMenuOpen((o) => !o)}
-              aria-label="Opzioni scheda"
+              aria-label={t('plans.optionsMenuLabel')}
               className="rounded-lg p-2 text-slate-300 transition hover:bg-bg-2 hover:text-slate-100"
             >
               <MoreVertical size={20} />
@@ -193,7 +196,7 @@ export function PlanEditorPage() {
               <div className="absolute right-0 top-11 z-30 w-44 overflow-hidden rounded-xl border border-bg-3 bg-bg-2 shadow-xl">
                 <MenuItem
                   icon={Copy}
-                  label="Duplica"
+                  labelKey="plans.duplicatePlan"
                   onClick={async () => {
                     setMenuOpen(false);
                     const copy = await duplicateMut.mutateAsync(plan.id);
@@ -202,7 +205,7 @@ export function PlanEditorPage() {
                 />
                 <MenuItem
                   icon={Archive}
-                  label="Archivia"
+                  labelKey="plans.archivePlan"
                   onClick={async () => {
                     setMenuOpen(false);
                     await updatePlanMut.mutateAsync({ id: plan.id, is_archived: true });
@@ -211,7 +214,7 @@ export function PlanEditorPage() {
                 />
                 <MenuItem
                   icon={Trash2}
-                  label="Elimina"
+                  labelKey="common.delete"
                   danger
                   onClick={() => {
                     setMenuOpen(false);
@@ -227,9 +230,9 @@ export function PlanEditorPage() {
             variant="success"
             className="w-full py-4 text-base"
             disabled
-            title="Disponibile nella Fase 3"
+            title={t('common.phase3')}
           >
-            <Play size={18} /> Inizia allenamento
+            <Play size={18} /> {t('plans.startWorkout')}
           </Button>
         }
       >
@@ -240,14 +243,14 @@ export function PlanEditorPage() {
         )}
 
         <p className="mb-3 px-1 text-xs text-slate-500">
-          Trascina ☰ per riordinare · tocca ✎ per configurare
+          {t('plans.dragHint')}
         </p>
 
         {exercisesQuery.isLoading && <Spinner />}
 
         {order.length === 0 && !exercisesQuery.isLoading && (
           <p className="rounded-xl border border-dashed border-bg-3 bg-bg-1/50 px-4 py-8 text-center text-sm text-slate-400">
-            Nessun esercizio nella scheda.
+            {t('plans.noExercisesInPlan')}
           </p>
         )}
 
@@ -280,7 +283,7 @@ export function PlanEditorPage() {
           onClick={() => setAddOpen(true)}
           className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-blueSoft/40 bg-blueGlow/5 py-3.5 text-sm font-bold text-blueSoft transition hover:bg-blueGlow/10"
         >
-          <Plus size={18} /> Aggiungi esercizio
+          <Plus size={18} /> {t('plans.addExercise')}
         </button>
       </AppShell>
 
@@ -305,16 +308,16 @@ export function PlanEditorPage() {
       )}
 
       {/* Rename / notes */}
-      <Modal open={renameOpen} onClose={() => setRenameOpen(false)} title="Modifica scheda">
+      <Modal open={renameOpen} onClose={() => setRenameOpen(false)} title={t('plans.editPlan')}>
         <form onSubmit={submitRename} className="flex flex-col gap-4">
-          <Input id="plan-rename" label="Nome" error={errors.name?.message} {...register('name')} />
-          <Textarea id="plan-notes" label="Note (opzionale)" {...register('notes')} />
+          <Input id="plan-rename" label={t('plans.name')} error={errors.name?.message} {...register('name')} />
+          <Textarea id="plan-notes" label={t('plans.notes')} {...register('notes')} />
           <div className="flex gap-3">
             <Button type="button" variant="ghost" onClick={() => setRenameOpen(false)} className="flex-1">
-              Annulla
+              {t('common.cancel')}
             </Button>
             <Button type="submit" loading={updatePlanMut.isPending} className="flex-1">
-              Salva
+              {t('common.save')}
             </Button>
           </div>
         </form>
@@ -329,9 +332,9 @@ export function PlanEditorPage() {
           await deleteItemMut.mutateAsync(deletingItem.id);
           setDeletingItem(null);
         }}
-        title="Rimuovere l'esercizio?"
-        message={`"${deletingItem?.exercise?.name ?? 'Esercizio'}" verrà rimosso dalla scheda.`}
-        confirmLabel="Rimuovi"
+        title={t('plans.removeExerciseConfirm')}
+        message={`"${deletingItem?.exercise?.name ?? t('plans.exercise')}" ${t('plans.removeExerciseWarning')}`}
+        confirmLabel={t('common.remove')}
         danger
         loading={deleteItemMut.isPending}
       />
@@ -344,9 +347,9 @@ export function PlanEditorPage() {
           await deletePlanMut.mutateAsync(plan.id);
           navigate('/');
         }}
-        title="Eliminare la scheda?"
-        message={`"${plan.name}" e i suoi esercizi verranno eliminati.`}
-        confirmLabel="Elimina"
+        title={t('plans.deleteConfirm')}
+        message={`"${plan.name}" ${t('plans.deleteConfirmWarning')}`}
+        confirmLabel={t('common.delete')}
         danger
         loading={deletePlanMut.isPending}
       />
