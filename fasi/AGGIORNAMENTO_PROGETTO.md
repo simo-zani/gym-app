@@ -6,7 +6,7 @@
 
 ## Stato corrente
 
-**Fase attiva:** Fase 2.5 — Traduzioni (i18n) completata · Fase 2 da testare E2E
+**Fase attiva:** Fase 2 — completata · pronta per Fase 3 (Modalità allenamento)
 **Ultimo aggiornamento:** 2026-06-29
 
 ---
@@ -16,8 +16,8 @@
 | Fase | Stato | Iniziata | Completata | Note |
 |------|-------|----------|------------|------|
 | 0 — Pianificazione | ✅ Completa | — | — | Mockup creato, piano scritto |
-| 1 — Fondamenta | 🟡 In corso | 2026-06-25 | — | Codice scaffolding fatto; restano progetto Supabase reale + deploy Vercel (non ancora creati) |
-| 2 — CRUD esercizi & schede | 🟡 In corso | 2026-06-25 | — | Codice completo (UI + data layer + seed wger); test end-to-end in sospeso finché manca il backend |
+| 1 — Fondamenta | ✅ Completa | 2026-06-25 | 2026-06-29 | Supabase live (URL: ecydsobgfryofiijkhkx), migrazioni 0001+0002 applicate, email confirm off |
+| 2 — CRUD esercizi & schede | ✅ Completa | 2026-06-25 | 2026-06-29 | Backend live; seed 858 esercizi wger; test E2E ok; deploy Vercel ok |
 | 2.5 — Traduzioni (i18n) | ✅ Completa | 2026-06-29 | 2026-06-29 | react-i18next + it/en.json; cambio lingua istantaneo da Impostazioni |
 | 3 — Modalità allenamento | ⏸ Non iniziata | — | — | — |
 | 4 — Offline-first | ⏸ Non iniziata | — | — | — |
@@ -57,11 +57,12 @@ Decisioni prese in fase di pianificazione (qui per memoria, vedi anche `README.m
 - **Service role key**: _solo per script di seed locale, non in repo_
 
 ### Vercel
-- **Project**: _da creare_
+- **Project**: gym-app-chi-rosy
+- **URL**: https://gym-app-chi-rosy.vercel.app
 - **Branch deploy**: `main`
 - **Env vars**:
-  - `VITE_SUPABASE_URL`
-  - `VITE_SUPABASE_ANON_KEY`
+  - `VITE_SUPABASE_URL` ✅
+  - `VITE_SUPABASE_ANON_KEY` ✅
 
 ### GitHub
 - **Repo**: _da creare_
@@ -114,8 +115,8 @@ Decisioni prese in fase di pianificazione (qui per memoria, vedi anche `README.m
 
 ## Metriche
 
-- **Esercizi seed wger importati**: 0 (script pronto: `npm run seed:wger`, da lanciare quando il backend è live)
-- **Tabelle DB create**: 5/5 (SQL in `0001_init.sql` + indice wger in `0002_wger_unique.sql`, da applicare su Supabase reale)
+- **Esercizi seed wger importati**: 858 ✅ (2026-06-29)
+- **Tabelle DB create**: 5/5 ✅ (applicate su Supabase `ecydsobgfryofiijkhkx`)
 - **Pagine implementate**: 6 (Login, Schede, Editor scheda, Esercizi, Storico placeholder, Profilo)
 - **Test su iPhone**: mai (da fare a fine Fase 4)
 
@@ -123,16 +124,15 @@ Decisioni prese in fase di pianificazione (qui per memoria, vedi anche `README.m
 
 ## Prossime azioni concrete
 
-Codice Fasi 1 e 2 fatto. Restano i passi manuali esterni (account), poi il test della Fase 2:
+1. ✅ Creato progetto Supabase (`ecydsobgfryofiijkhkx`) → URL + anon key in `.env`
+2. ✅ SQL Editor → applicate `0001_init.sql` + `0002_wger_unique.sql`
+3. ✅ Authentication → "Confirm signup" disattivato
+4. ✅ `npm run seed:wger` → 858 esercizi importati
+5. ✅ Test E2E Fase 2 superato (crea/modifica/elimina esercizi e schede, drag & drop ok)
+6. ✅ Repo GitHub creato + collegato a Vercel
+7. ✅ Deploy Vercel: https://gym-app-chi-rosy.vercel.app
 
-1. Creare progetto Supabase → copiare URL + anon key in `.env` (locale) e nelle env Vercel
-2. SQL Editor di Supabase → eseguire in ordine `0001_init.sql` poi `0002_wger_unique.sql`
-3. Authentication → disattivare "Confirm signup" (email confirmation)
-4. Verificare in SQL che un utente NON veda i dati di un altro (test RLS)
-5. Aggiungere la service role key in `.env` come `SUPABASE_SERVICE_ROLE_KEY`, poi `npm run seed:wger` (import catalogo wger una tantum)
-6. `npm run dev` → testare la checklist Fase 2 (crea esercizio, crea scheda, aggiungi/configura/riordina esercizi, duplica/elimina)
-7. Creare repo GitHub push, collegare a Vercel (framework Vite, 2 env var) → deploy `main`
-8. Aggiornare questo file con URL Supabase e link Vercel; chiudere Fasi 1 e 2
+**⭐ Prossimo passo: Fase 3 — Modalità allenamento**
 
 ---
 
