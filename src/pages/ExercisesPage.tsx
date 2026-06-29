@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Search, Dumbbell, ChevronRight } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { Fab } from '@/components/ui/Fab';
@@ -22,6 +23,7 @@ import { ExerciseDetailModal } from '@/features/exercises/ExerciseDetailModal';
 import type { Exercise, MuscleGroup } from '@/types/db';
 
 export function ExercisesPage() {
+  const { t } = useTranslation();
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebouncedValue(search);
   const [muscles, setMuscles] = useState<MuscleGroup[]>([]);
@@ -86,8 +88,8 @@ export function ExercisesPage() {
       const msg = err instanceof Error ? err.message : '';
       setDeleteError(
         /violates foreign key|restrict/i.test(msg)
-          ? 'Esercizio usato in una o più schede: rimuovilo prima da lì.'
-          : 'Impossibile eliminare l\'esercizio.',
+          ? t('exercises.usedIn')
+          : t('exercises.cannotDelete'),
       );
     }
   }
@@ -95,8 +97,8 @@ export function ExercisesPage() {
   return (
     <>
       <AppShell
-        title="Esercizi"
-        subtitle={data ? `${data.length} visibili · ${customCount} custom` : undefined}
+        title={t('exercises.title')}
+        subtitle={data ? `${data.length} ${t('exercises.exerciseCountSubtitle').split(' · ')[0]} · ${customCount} ${t('exercises.custom')}` : undefined}
       >
         {/* Search */}
         <div className="mb-3 flex items-center gap-2 rounded-xl border border-bg-2 bg-bg-1 px-3.5 py-2.5">
@@ -104,7 +106,7 @@ export function ExercisesPage() {
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Cerca esercizio…"
+            placeholder={t('exercises.searchPlaceholder')}
             className="w-full bg-transparent text-sm text-slate-100 placeholder:text-slate-500 outline-none"
           />
         </div>
@@ -132,18 +134,18 @@ export function ExercisesPage() {
         {isLoading && <Spinner />}
         {isError && (
           <p className="rounded-lg bg-dangerRed/10 px-3 py-2 text-sm text-dangerRed">
-            Errore nel caricamento degli esercizi.
+            {t('exercises.loadingError')}
           </p>
         )}
 
         {data && data.length === 0 && (
           <EmptyState
             icon={Dumbbell}
-            title="Nessun esercizio"
+            title={t('exercises.emptyState')}
             description={
               search || muscles.length
-                ? 'Nessun risultato per i filtri attuali.'
-                : 'Crea il tuo primo esercizio o importa il catalogo wger.'
+                ? t('exercises.noResults')
+                : t('exercises.emptyStateHint')
             }
           />
         )}
@@ -161,9 +163,9 @@ export function ExercisesPage() {
                     <p className="mt-0.5 text-xs text-slate-400">
                       {muscleGroupLabel(ex.muscle_group)} ·{' '}
                       {ex.owner_id !== null ? (
-                        <span className="text-amber-400">custom</span>
+                        <span className="text-amber-400">{t('exercises.custom')}</span>
                       ) : (
-                        'wger'
+                        t('exercises.wger')
                       )}
                     </p>
                   </div>
@@ -176,7 +178,7 @@ export function ExercisesPage() {
         )}
       </AppShell>
 
-      <Fab onClick={openCreate} label="Nuovo esercizio" />
+      <Fab onClick={openCreate} label={t('exercises.newExercise')} />
 
       <ExerciseFormModal
         open={formOpen}
@@ -207,9 +209,9 @@ export function ExercisesPage() {
           setDeleteError(null);
         }}
         onConfirm={handleDelete}
-        title="Eliminare l'esercizio?"
-        message={`"${deleting?.name}" verrà eliminato definitivamente.`}
-        confirmLabel="Elimina"
+        title={t('exercises.deleteConfirm')}
+        message={`"${deleting?.name}" ${t('common.close')}.`}
+        confirmLabel={t('common.delete')}
         danger
         loading={deleteMut.isPending}
         error={deleteError}

@@ -62,7 +62,8 @@
     "dragHint": "Trascina ☰ per riordinare · tocca ✎ per configurare",
     "optionsMenuLabel": "Opzioni scheda",
     "openPlanLabel": "Apri scheda",
-    "exerciseRemoved": "Esercizio rimosso"
+    "exerciseRemoved": "Esercizio rimosso",
+    "loadingError": "Errore nel caricamento delle schede."
   },
   "exercises": {
     "title": "Esercizi",

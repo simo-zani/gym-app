@@ -62,7 +62,8 @@
     "dragHint": "Drag ☰ to reorder · tap ✎ to configure",
     "optionsMenuLabel": "Plan options",
     "openPlanLabel": "Open plan",
-    "exerciseRemoved": "Exercise removed"
+    "exerciseRemoved": "Exercise removed",
+    "loadingError": "Error loading plans."
   },
   "exercises": {
     "title": "Exercises",
