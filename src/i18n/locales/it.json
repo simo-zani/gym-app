@@ -171,5 +171,38 @@
     "configure": "Configura esercizio",
     "dragToReorder": "Trascina per riordinare",
     "phase3": "Fase 3"
+  },
+  "workout": {
+    "exerciseActive": "Esercizio attivo",
+    "timedExercise": "Esercizio a tempo",
+    "rest": "Recupero",
+    "setOf": "Serie {{current}} / {{total}}",
+    "setLabel": "Serie",
+    "done": "Fatto!",
+    "startTimer": "Inizia",
+    "stopTimer": "Interrompi",
+    "timedHint": "Premi Inizia per avviare il timer",
+    "repsLabel": "Ripetizioni",
+    "weightLabel": "Peso",
+    "bodyweight": "Corpo libero",
+    "nextExercise": "Prossimo esercizio",
+    "nextSet": "Prossima serie",
+    "upNext": "Prossimo",
+    "skip": "Salta recupero",
+    "exit": "Esci",
+    "exitConfirmTitle": "Uscire dall'allenamento?",
+    "exitConfirmBody": "Il progresso della sessione corrente verrà salvato come incompleto.",
+    "exitConfirmButton": "Sì, esci",
+    "summaryTitle": "Allenamento completato!",
+    "summarySubtitle": "Ottimo lavoro. Ecco il riepilogo della sessione.",
+    "duration": "Durata",
+    "minutesAbbr": "min",
+    "completedSets": "Set completati",
+    "completedExercises": "Esercizi",
+    "setBreakdown": "Dettaglio serie",
+    "notesLabel": "Note sessione (opzionale)",
+    "notesPlaceholder": "Come ti sei sentito? Eventuali osservazioni…",
+    "finishAndSave": "Termina e salva"
   }
 }
+

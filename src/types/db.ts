@@ -57,3 +57,30 @@ export interface WorkoutPlanExercise {
 export interface PlanExerciseWithExercise extends WorkoutPlanExercise {
   exercise: Pick<Exercise, 'id' | 'name' | 'muscle_group'> | null;
 }
+
+export interface WorkoutSession {
+  id: string;
+  user_id: string;
+  plan_id: string | null;
+  plan_name_snapshot: string | null;
+  started_at: string;
+  ended_at: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface WorkoutSessionSet {
+  id: string;
+  session_id: string;
+  exercise_id: string;
+  exercise_name_snapshot: string;
+  set_number: number;
+  mode: ExerciseMode;
+  reps_done: number | null;
+  duration_seconds_done: number | null;
+  weight_kg: number | null;
+  rest_seconds_taken: number | null;
+  completed_at: string;
+  created_at: string;
+}

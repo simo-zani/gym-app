@@ -8,6 +8,7 @@ import { PlanEditorPage } from '@/pages/PlanEditorPage';
 import { ExercisesPage } from '@/pages/ExercisesPage';
 import { HistoryPage } from '@/pages/HistoryPage';
 import { ProfilePage } from '@/pages/ProfilePage';
+import { WorkoutRunnerPage } from '@/pages/WorkoutRunnerPage';
 
 function LoginRoute() {
   const { session, loading } = useAuth();
@@ -29,8 +30,9 @@ export function AppRoutes() {
             <Route path="/history" element={<HistoryPage />} />
             <Route path="/profile" element={<ProfilePage />} />
           </Route>
-          {/* Full-screen editor (no bottom nav) */}
+          {/* Full-screen pages (no bottom nav) */}
           <Route path="/plans/:id" element={<PlanEditorPage />} />
+          <Route path="/plans/:id/run" element={<WorkoutRunnerPage />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

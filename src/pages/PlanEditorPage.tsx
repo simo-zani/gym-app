@@ -232,8 +232,8 @@ export function PlanEditorPage() {
           <Button
             variant="success"
             className="w-full py-4 text-base"
-            disabled
-            title={t('common.phase3')}
+            disabled={order.length === 0}
+            onClick={() => navigate(`/plans/${id}/run`)}
           >
             <Play size={18} /> {t('plans.startWorkout')}
           </Button>
