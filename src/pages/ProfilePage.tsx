@@ -15,7 +15,9 @@ export function ProfilePage() {
   const customCount = (exercises ?? []).filter((e) => e.owner_id !== null).length;
 
   const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    i18n.changeLanguage(e.target.value);
+    const lang = e.target.value;
+    localStorage.setItem('gymapp-language', lang);
+    i18n.changeLanguage(lang);
   };
 
   return (
@@ -53,7 +55,7 @@ export function ProfilePage() {
         <div className="rounded-2xl border border-bg-2 bg-bg-1 p-5">
           <label className="text-sm text-slate-400">{t('profile.language')}</label>
           <Select
-            value={i18n.language}
+            value={i18n.language.split('-')[0]}
             onChange={handleLanguageChange}
             className="mt-2"
           >

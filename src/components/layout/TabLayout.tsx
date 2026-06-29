@@ -8,10 +8,10 @@ import { BottomNav } from './BottomNav';
 export function TabLayout() {
   return (
     <div className="mx-auto min-h-full w-full max-w-md bg-bg-0 flex flex-col">
-      {/* Dynamic padding bottom to prevent content overlap with home indicator */}
-      <div 
+      {/* Padding bottom clears: pill height (~72px) + padding (~20px) + safe area */}
+      <div
         className="flex-1"
-        style={{ paddingBottom: 'calc(5.5rem + env(safe-area-inset-bottom))' }}
+        style={{ paddingBottom: 'calc(6rem + env(safe-area-inset-bottom))' }}
       >
         <Outlet />
       </div>

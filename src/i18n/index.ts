@@ -10,6 +10,9 @@ i18n
   .init({
     fallbackLng: 'it',
     load: 'languageOnly',
+    // Normalize it-IT → it, en-US → en etc.
+    supportedLngs: ['it', 'en'],
+    nonExplicitSupportedLngs: true,
     defaultNS: 'common',
     resources: {
       it: { common: itTranslations },
@@ -21,6 +24,7 @@ i18n
     detection: {
       order: ['localStorage', 'navigator'],
       caches: ['localStorage'],
+      lookupLocalStorage: 'gymapp-language',
     },
   });
 

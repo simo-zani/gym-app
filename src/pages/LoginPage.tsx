@@ -48,7 +48,9 @@ export function LoginPage() {
   });
 
   const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    i18n.changeLanguage(e.target.value);
+    const lang = e.target.value;
+    localStorage.setItem('gymapp-language', lang);
+    i18n.changeLanguage(lang);
   };
 
   return (
@@ -63,7 +65,7 @@ export function LoginPage() {
       >
         <Globe size={16} className="text-slate-500" />
         <Select
-          value={i18n.language}
+          value={i18n.language.split('-')[0]}
           onChange={handleLanguageChange}
           className="text-sm"
         >
