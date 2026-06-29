@@ -20,7 +20,7 @@ export function BottomNav() {
 
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-40 mx-auto flex max-w-md justify-around border-t border-bg-2 bg-red-600 px-2 pt-3.5 backdrop-blur"
+      className="fixed inset-x-0 bottom-0 z-40 mx-auto flex max-w-md justify-around border-t border-bg-2 bg-bg-1/95 px-2 pt-3.5 backdrop-blur"
       style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))' }}
     >
       {TABS.map(({ to, labelKey, icon: Icon }) => (
