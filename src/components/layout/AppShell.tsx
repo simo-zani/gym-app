@@ -28,7 +28,10 @@ export function AppShell({
   return (
     <div className="flex min-h-full flex-col">
       {(title || onBack || action) && (
-        <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-bg-2 bg-bg-0/90 px-4 py-4 backdrop-blur">
+        <header
+          className="sticky top-0 z-20 flex items-center gap-3 border-b border-bg-2 bg-bg-0/90 px-4 pb-4 backdrop-blur"
+          style={{ paddingTop: 'calc(1rem + env(safe-area-inset-top))' }}
+        >
           {onBack && (
             <button
               onClick={onBack}

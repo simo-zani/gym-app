@@ -27,11 +27,11 @@ export function Modal({ open, onClose, title, children }: ModalProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div
-        className="absolute inset-0 bg-bg-0/70 backdrop-blur-sm"
+        className="absolute inset-0 bg-bg-0/70 backdrop-blur-sm animate-backdrop-in"
         onClick={onClose}
         aria-hidden
       />
-      <div className="relative z-10 w-full max-w-sm rounded-2xl border border-bg-3 bg-bg-1 p-5 shadow-2xl">
+      <div className="relative z-10 w-full max-w-sm rounded-2xl border border-bg-3 bg-bg-1 p-5 shadow-2xl animate-modal-in">
         {title && (
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-lg font-bold text-slate-100">{title}</h2>

@@ -7,9 +7,12 @@ import { BottomNav } from './BottomNav';
  */
 export function TabLayout() {
   return (
-    <div className="mx-auto min-h-full w-full max-w-md bg-bg-0">
-      {/* pb clears the fixed BottomNav (~64px + safe area) */}
-      <div className="pb-24">
+    <div className="mx-auto min-h-full w-full max-w-md bg-bg-0 flex flex-col">
+      {/* Dynamic padding bottom to prevent content overlap with home indicator */}
+      <div 
+        className="flex-1"
+        style={{ paddingBottom: 'calc(5.5rem + env(safe-area-inset-bottom))' }}
+      >
         <Outlet />
       </div>
       <BottomNav />

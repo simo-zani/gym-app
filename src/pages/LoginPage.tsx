@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Dumbbell, Globe } from 'lucide-react';
+import { Globe } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/features/auth/useAuth';
 import { Button } from '@/components/ui/Button';
@@ -52,9 +52,15 @@ export function LoginPage() {
   };
 
   return (
-    <div className="mx-auto flex min-h-full w-full max-w-md flex-col justify-center px-6 py-12">
+    <div 
+      className="mx-auto flex min-h-full w-full max-w-md flex-col justify-center px-6 pb-12 relative"
+      style={{ paddingTop: 'calc(4rem + env(safe-area-inset-top))' }}
+    >
       {/* Language selector */}
-      <div className="absolute right-6 top-6 flex items-center gap-2">
+      <div 
+        className="absolute right-6 flex items-center gap-2"
+        style={{ top: 'calc(1.5rem + env(safe-area-inset-top))' }}
+      >
         <Globe size={16} className="text-slate-500" />
         <Select
           value={i18n.language}
@@ -66,8 +72,8 @@ export function LoginPage() {
         </Select>
       </div>
       <div className="mb-8 flex flex-col items-center gap-3 text-center">
-        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-blueGlow/15 text-blueSoft">
-          <Dumbbell size={32} />
+        <div className="flex h-16 w-16 items-center justify-center rounded-2xl overflow-hidden">
+          <img src="/icons/icon_v1_dumbbell.svg" alt="App Logo" className="h-16 w-16 object-contain" />
         </div>
         <h1 className="text-2xl font-bold text-slate-100">{t('auth.appTitle')}</h1>
         <p className="text-sm text-slate-400">
