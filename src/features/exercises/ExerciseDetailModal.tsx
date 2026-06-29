@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Pencil, Trash2 } from 'lucide-react';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
@@ -17,6 +18,7 @@ export function ExerciseDetailModal({
   onEdit,
   onDelete,
 }: ExerciseDetailModalProps) {
+  const { t } = useTranslation();
   if (!exercise) return null;
   const isCustom = exercise.owner_id !== null;
 
