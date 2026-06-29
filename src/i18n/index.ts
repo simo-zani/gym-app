@@ -9,6 +9,7 @@ i18n
   .use(initReactI18next)
   .init({
     fallbackLng: 'it',
+    load: 'languageOnly',
     defaultNS: 'common',
     resources: {
       it: { common: itTranslations },
