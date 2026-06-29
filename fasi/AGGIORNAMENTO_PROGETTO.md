@@ -6,7 +6,7 @@
 
 ## Stato corrente
 
-**Fase attiva:** Fase 2 — completata · pronta per Fase 3 (Modalità allenamento)
+**Fase attiva:** Fase 4 — Offline-first (non iniziata)
 **Ultimo aggiornamento:** 2026-06-29
 
 ---
@@ -19,7 +19,7 @@
 | 1 — Fondamenta | ✅ Completa | 2026-06-25 | 2026-06-29 | Supabase live (URL: ecydsobgfryofiijkhkx), migrazioni 0001+0002 applicate, email confirm off |
 | 2 — CRUD esercizi & schede | ✅ Completa | 2026-06-25 | 2026-06-29 | Backend live; seed 858 esercizi wger; test E2E ok; deploy Vercel ok |
 | 2.5 — Traduzioni (i18n) | ✅ Completa | 2026-06-29 | 2026-06-29 | react-i18next + it/en.json; cambio lingua istantaneo da Impostazioni |
-| 3 — Modalità allenamento | ⏸ Non iniziata | — | — | — |
+| 3 — Modalità allenamento | ✅ Completa | 2026-06-29 | 2026-06-29 | Zustand store, timer drift-free, beep Web Audio, wake lock, riepilogo finale, route /run |
 | 4 — Offline-first | ⏸ Non iniziata | — | — | — |
 | 5 — Rifiniture | ⏸ Non iniziata | — | — | A piacere |
 | 6 — Distribuzione | ⏸ Non iniziata | — | — | Opzionale: APK/Play Store |
@@ -75,7 +75,17 @@ Decisioni prese in fase di pianificazione (qui per memoria, vedi anche `README.m
 > Formato: `YYYY-MM-DD — [Fase X] — Descrizione`
 
 - 2026-06-25 — [Fase 1] — Scaffolding progetto: Vite + React 18 + TS + Tailwind, routing (login/home protetta), AuthProvider Supabase (signIn/signUp/signOut), TanStack Query, UI primitives (Button/Input), AppShell. Migrazione SQL completa `supabase/migrations/0001_init.sql` (5 tabelle + trigger updated_at + RLS su tutte). `vercel.json` con rewrite SPA. `npm run build` e `tsc --noEmit` verdi.
-- 2026-06-29 — [Fase 2.5] — Internazionalizzazione (i18n) completa:
+- 2026-06-29 — [Fase 3] — Modalità allenamento completa:
+  - **Zustand store** (`useWorkoutStore.ts`) con state machine idle→starting→exercising/timed_running→resting→completed, persistita in sessionStorage per sopravvivere ai reload
+  - **workoutRepository.ts**: service layer isolato (createSession, saveSet, finishSession) — in Fase 4 si sostituisce solo l'implementazione
+  - **audio.ts**: beep Web Audio API sintetizzati (no file), unlockAudio() per iOS Safari
+  - **useCountdown.ts**: hook drift-free con Date.now() anchor e onEnd ref-safe
+  - **Schermate**: RepsExerciseScreen (stepper reps/peso inline), TimedExerciseScreen (countdown rosso, start/stop), RestScreen (anello SVG verde, ±15s, salta), WorkoutSummaryScreen (trofeo, stat grid, dettaglio set, note)
+  - **Wake Lock API**: richiesto all'avvio, riacquistato su visibilitychange
+  - **Route** `/plans/:id/run` aggiunta (full-screen, no bottom nav)
+  - **CTA "Inizia allenamento"** abilitata in PlanEditorPage (naviga a /run, disabilitata solo se scheda vuota)
+  - **i18n**: sezione `workout` aggiunta in it.json e en.json (~25 chiavi)
+  - Build e TypeScript check verdi; 16 file modificati/creati, commit 80bf12c
   - Installate dipendenze: `react-i18next`, `i18next`, `i18next-browser-languagedetector`
   - Configurazione i18next in `src/i18n/index.ts` con rilevamento automatico lingua browser e persistenza localStorage
   - File di traduzione: `src/i18n/locales/it.json` (italiano) e `en.json` (inglese) con ~100+ chiavi organizzate per sezione (nav, auth, plans, exercises, history, profile, common, etc.)
