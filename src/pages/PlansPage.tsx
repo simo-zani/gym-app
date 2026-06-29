@@ -24,7 +24,7 @@ import {
 } from '@/features/plans/hooks';
 
 const nameSchema = (t: (key: string) => string) =>
-  z.object({ name: z.string().min(1, t('auth.validationNameRequired')) });
+  z.object({ name: z.string().min(1, t('plans.name')) });
 type NameForm = z.infer<ReturnType<typeof nameSchema>>;
 
 export function PlansPage() {
@@ -73,7 +73,7 @@ export function PlansPage() {
         {isLoading && <Spinner />}
         {isError && (
           <p className="rounded-lg bg-dangerRed/10 px-3 py-2 text-sm text-dangerRed">
-            {t('plans.loadingError')}
+            {t('common.error')} nel caricamento delle schede.
           </p>
         )}
 

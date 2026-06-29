@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Search, Dumbbell, ChevronRight } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
@@ -40,11 +40,6 @@ export function ExercisesPage() {
   const updateMut = useUpdateExercise();
   const deleteMut = useDeleteExercise();
 
-  const customCount = useMemo(
-    () => (data ?? []).filter((e) => e.owner_id !== null).length,
-    [data],
-  );
-
   function toggleMuscle(m: MuscleGroup) {
     setMuscles((prev) => (prev.includes(m) ? prev.filter((x) => x !== m) : [...prev, m]));
   }
@@ -73,7 +68,7 @@ export function ExercisesPage() {
       setFormOpen(false);
       setEditing(null);
     } catch (err) {
-      setFormError(err instanceof Error ? err.message : 'Errore imprevisto');
+      setFormError(err instanceof Error ? err.message : t('common.unexpectedError'));
     }
   }
 
@@ -98,7 +93,7 @@ export function ExercisesPage() {
     <>
       <AppShell
         title={t('exercises.title')}
-        subtitle={data ? `${data.length} ${t('common.search')} · ${customCount} ${t('exercises.custom')}` : undefined}
+        subtitle={data ? `${data.length} ${t('exercises.exerciseCountSubtitle')}` : undefined}
       >
         {/* Search */}
         <div className="mb-3 flex items-center gap-2 rounded-xl border border-bg-2 bg-bg-1 px-3.5 py-2.5">
@@ -210,7 +205,7 @@ export function ExercisesPage() {
         }}
         onConfirm={handleDelete}
         title={t('exercises.deleteConfirm')}
-        message={`"${deleting?.name}" ${t('common.close')}.`}
+        message={`"${deleting?.name}" sarà eliminato definitivamente.`}
         confirmLabel={t('common.delete')}
         danger
         loading={deleteMut.isPending}

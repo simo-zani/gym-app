@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useTranslation } from 'react-i18next';
 import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
@@ -10,13 +11,14 @@ import { Button } from '@/components/ui/Button';
 import { MUSCLE_GROUPS } from './muscleGroups';
 import type { Exercise, MuscleGroup } from '@/types/db';
 
-const schema = z.object({
-  name: z.string().min(1, 'Nome obbligatorio'),
-  muscle_group: z.string().optional(),
-  description: z.string().optional(),
-});
+const schema = (t: (key: string) => string) =>
+  z.object({
+    name: z.string().min(1, t('exercises.validationNameRequired')),
+    muscle_group: z.string().optional(),
+    description: z.string().optional(),
+  });
 
-type FormValues = z.infer<typeof schema>;
+type FormValues = z.infer<ReturnType<typeof schema>>;
 
 export interface ExerciseFormSubmit {
   name: string;
@@ -42,13 +44,14 @@ export function ExerciseFormModal({
   submitting,
   error,
 }: ExerciseFormModalProps) {
+  const { t } = useTranslation();
   const isEdit = Boolean(exercise);
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<FormValues>({ resolver: zodResolver(schema) });
+  } = useForm<FormValues>({ resolver: zodResolver(schema(t)) });
 
   useEffect(() => {
     if (open) {
@@ -69,17 +72,17 @@ export function ExerciseFormModal({
   });
 
   return (
-    <Modal open={open} onClose={onClose} title={isEdit ? 'Modifica esercizio' : 'Nuovo esercizio'}>
+    <Modal open={open} onClose={onClose} title={isEdit ? t('exercises.editExercise') : t('exercises.createExercise')}>
       <form onSubmit={submit} className="flex flex-col gap-4">
         <Input
           id="ex-name"
-          label="Nome"
-          placeholder="Es. Panca piana bilanciere"
+          label={t('exercises.name')}
+          placeholder={t('exercises.namePlaceholder')}
           error={errors.name?.message}
           {...register('name')}
         />
-        <Select id="ex-muscle" label="Gruppo muscolare" {...register('muscle_group')}>
-          <option value="">— Nessuno —</option>
+        <Select id="ex-muscle" label={t('exercises.muscleGroup')} {...register('muscle_group')}>
+          <option value="">{t('exercises.muscleGroupPlaceholder')}</option>
           {MUSCLE_GROUPS.map((g) => (
             <option key={g.value} value={g.value}>
               {g.label}
@@ -88,8 +91,8 @@ export function ExerciseFormModal({
         </Select>
         <Textarea
           id="ex-desc"
-          label="Descrizione (opzionale)"
-          placeholder="Note su esecuzione, presa, ecc."
+          label={t('exercises.description')}
+          placeholder={t('exercises.descriptionPlaceholder')}
           {...register('description')}
         />
 
@@ -99,10 +102,10 @@ export function ExerciseFormModal({
 
         <div className="mt-1 flex gap-3">
           <Button type="button" variant="ghost" onClick={onClose} className="flex-1">
-            Annulla
+            {t('common.cancel')}
           </Button>
           <Button type="submit" loading={submitting} className="flex-1">
-            {isEdit ? 'Salva' : 'Crea'}
+            {isEdit ? t('common.save') : t('common.create')}
           </Button>
         </div>
       </form>

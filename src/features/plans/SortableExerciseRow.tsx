@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, Pencil, Trash2 } from 'lucide-react';
@@ -12,6 +13,7 @@ interface SortableExerciseRowProps {
 }
 
 export function SortableExerciseRow({ item, index, onEdit, onDelete }: SortableExerciseRowProps) {
+  const { t } = useTranslation();
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: item.id,
   });
@@ -32,7 +34,7 @@ export function SortableExerciseRow({ item, index, onEdit, onDelete }: SortableE
       <button
         {...attributes}
         {...listeners}
-        aria-label="Trascina per riordinare"
+        aria-label={t('common.dragToReorder')}
         className="cursor-grab touch-none text-slate-500 active:cursor-grabbing"
       >
         <GripVertical size={18} />
@@ -44,21 +46,21 @@ export function SortableExerciseRow({ item, index, onEdit, onDelete }: SortableE
 
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-semibold text-slate-100">
-          {item.exercise?.name ?? 'Esercizio rimosso'}
+          {item.exercise?.name ?? t('plans.exerciseRemoved')}
         </p>
         <p className="mt-0.5 truncate text-xs text-slate-400">{formatPlanExercise(item)}</p>
       </div>
 
       <button
         onClick={() => onEdit(item)}
-        aria-label="Configura esercizio"
+        aria-label={t('common.configure')}
         className="rounded-lg p-1.5 text-slate-400 transition hover:bg-bg-3 hover:text-slate-100"
       >
         <Pencil size={16} />
       </button>
       <button
         onClick={() => onDelete(item)}
-        aria-label="Rimuovi esercizio"
+        aria-label={t('common.remove')}
         className="rounded-lg p-1.5 text-slate-400 transition hover:bg-bg-3 hover:text-dangerRed"
       >
         <Trash2 size={16} />

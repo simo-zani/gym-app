@@ -28,23 +28,23 @@ export function ExerciseDetailModal({
         <div className="flex flex-wrap items-center gap-2">
           <MuscleGroupBadge group={exercise.muscle_group} />
           <span className="text-xs text-slate-400">
-            {isCustom ? 'Esercizio personalizzato' : 'Catalogo wger'}
+            {isCustom ? t('exercises.customLabel') : t('exercises.wgerLabel')}
           </span>
         </div>
 
         {exercise.description ? (
           <p className="text-sm leading-relaxed text-slate-300">{exercise.description}</p>
         ) : (
-          <p className="text-sm italic text-slate-500">Nessuna descrizione.</p>
+          <p className="text-sm italic text-slate-500">{t('exercises.noDescription')}</p>
         )}
 
         {isCustom && (
           <div className="mt-1 flex gap-3">
             <Button variant="ghost" onClick={() => onEdit(exercise)} className="flex-1">
-              <Pencil size={16} /> Modifica
+              <Pencil size={16} /> {t('common.edit')}
             </Button>
             <Button variant="danger" onClick={() => onDelete(exercise)} className="flex-1">
-              <Trash2 size={16} /> Elimina
+              <Trash2 size={16} /> {t('common.delete')}
             </Button>
           </div>
         )}

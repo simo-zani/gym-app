@@ -137,7 +137,7 @@ export function PlanEditorPage() {
   function onEditItem(item: PlanExerciseWithExercise) {
     setConfig({
       exerciseId: item.exercise_id,
-      exerciseName: item.exercise?.name ?? 'Esercizio',
+      exerciseName: item.exercise?.name ?? t('plans.exercise'),
       initial: item,
     });
   }
@@ -182,7 +182,7 @@ export function PlanEditorPage() {
             <Pencil size={15} className="flex-none text-slate-500" />
           </button>
         }
-        subtitle={t('plans.editorSubtitle')}
+        subtitle={t('plans.editorTitle')}
         action={
           <div ref={menuRef} className="relative">
             <button
@@ -197,6 +197,7 @@ export function PlanEditorPage() {
                 <MenuItem
                   icon={Copy}
                   labelKey="plans.duplicatePlan"
+                  t={t}
                   onClick={async () => {
                     setMenuOpen(false);
                     const copy = await duplicateMut.mutateAsync(plan.id);
@@ -206,6 +207,7 @@ export function PlanEditorPage() {
                 <MenuItem
                   icon={Archive}
                   labelKey="plans.archivePlan"
+                  t={t}
                   onClick={async () => {
                     setMenuOpen(false);
                     await updatePlanMut.mutateAsync({ id: plan.id, is_archived: true });
@@ -214,7 +216,8 @@ export function PlanEditorPage() {
                 />
                 <MenuItem
                   icon={Trash2}
-                  labelKey="common.delete"
+                  labelKey="plans.deletePlan"
+                  t={t}
                   danger
                   onClick={() => {
                     setMenuOpen(false);
@@ -360,15 +363,16 @@ export function PlanEditorPage() {
 function MenuItem({
   icon: Icon,
   labelKey,
+  t,
   onClick,
   danger,
 }: {
   icon: typeof Copy;
   labelKey: string;
+  t: (key: string) => string;
   onClick: () => void;
   danger?: boolean;
 }) {
-  const { t } = useTranslation();
   return (
     <button
       onClick={onClick}

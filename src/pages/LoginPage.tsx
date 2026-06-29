@@ -2,11 +2,12 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Dumbbell } from 'lucide-react';
+import { Dumbbell, Globe } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/features/auth/useAuth';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { Select } from '@/components/ui/Select';
 
 const createSchema = (t: (key: string) => string) =>
   z.object({
@@ -20,7 +21,7 @@ type FormValues = {
 };
 
 export function LoginPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { signIn, signUp } = useAuth();
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
   const [serverError, setServerError] = useState<string | null>(null);
@@ -46,8 +47,24 @@ export function LoginPage() {
     }
   });
 
+  const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    i18n.changeLanguage(e.target.value);
+  };
+
   return (
     <div className="mx-auto flex min-h-full w-full max-w-md flex-col justify-center px-6 py-12">
+      {/* Language selector */}
+      <div className="absolute right-6 top-6 flex items-center gap-2">
+        <Globe size={16} className="text-slate-500" />
+        <Select
+          value={i18n.language}
+          onChange={handleLanguageChange}
+          className="text-sm"
+        >
+          <option value="it">{t('profile.italian')}</option>
+          <option value="en">{t('profile.english')}</option>
+        </Select>
+      </div>
       <div className="mb-8 flex flex-col items-center gap-3 text-center">
         <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-blueGlow/15 text-blueSoft">
           <Dumbbell size={32} />

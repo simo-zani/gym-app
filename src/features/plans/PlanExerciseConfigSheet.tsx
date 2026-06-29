@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { BottomSheet } from '@/components/ui/BottomSheet';
 import { Button } from '@/components/ui/Button';
 import { Textarea } from '@/components/ui/Textarea';
@@ -33,6 +34,7 @@ export function PlanExerciseConfigSheet({
   onSubmit,
   submitting,
 }: ConfigSheetProps) {
+  const { t } = useTranslation();
   const [mode, setMode] = useState<ExerciseMode>('reps');
   const [sets, setSets] = useState(DEFAULTS.sets);
   const [reps, setReps] = useState(DEFAULTS.reps);
@@ -67,12 +69,12 @@ export function PlanExerciseConfigSheet({
   }
 
   return (
-    <BottomSheet open={open} onClose={onClose} title={`Configura · ${exerciseName}`}>
+    <BottomSheet open={open} onClose={onClose} title={`${t('exerciseConfig.title')} · ${exerciseName}`}>
       <div className="flex flex-col gap-4">
         {/* Mode toggle */}
         <div>
           <span className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-slate-400">
-            Modalità
+            {t('exerciseConfig.mode')}
           </span>
           <div className="flex rounded-xl border border-bg-3 bg-bg-2 p-1">
             {(['reps', 'time'] as ExerciseMode[]).map((m) => (
@@ -84,19 +86,19 @@ export function PlanExerciseConfigSheet({
                   mode === m ? 'bg-blueGlow text-white' : 'text-slate-400'
                 }`}
               >
-                {m === 'reps' ? 'Ripetizioni' : 'A tempo'}
+                {m === 'reps' ? t('exerciseConfig.reps') : t('exerciseConfig.timedMode')}
               </button>
             ))}
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-3">
-          <NumberStepper label="Serie" value={sets} onChange={setSets} min={1} max={20} />
+          <NumberStepper label={t('exerciseConfig.series')} value={sets} onChange={setSets} min={1} max={20} />
           {mode === 'reps' ? (
-            <NumberStepper label="Ripetizioni" value={reps} onChange={setReps} min={1} max={100} />
+            <NumberStepper label={t('exerciseConfig.reps')} value={reps} onChange={setReps} min={1} max={100} />
           ) : (
             <NumberStepper
-              label="Durata"
+              label={t('exerciseConfig.duration')}
               value={duration}
               onChange={setDuration}
               min={5}
@@ -109,7 +111,7 @@ export function PlanExerciseConfigSheet({
 
         <div className="grid grid-cols-2 gap-3">
           <NumberStepper
-            label="Peso"
+            label={t('exerciseConfig.weight')}
             value={weight}
             onChange={setWeight}
             min={0}
@@ -120,7 +122,7 @@ export function PlanExerciseConfigSheet({
             placeholder="—"
           />
           <NumberStepper
-            label="Recupero"
+            label={t('exerciseConfig.rest')}
             value={rest}
             onChange={setRest}
             min={0}
@@ -132,14 +134,14 @@ export function PlanExerciseConfigSheet({
 
         <Textarea
           id="pe-notes"
-          label="Note (opzionale)"
-          placeholder="Es. tenuta 2s in alto"
+          label={t('exerciseConfig.notes')}
+          placeholder={t('exerciseConfig.notesPlaceholder')}
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
         />
 
         <Button onClick={handleSave} loading={submitting} className="mt-1">
-          Salva
+          {t('common.save')}
         </Button>
       </div>
     </BottomSheet>
