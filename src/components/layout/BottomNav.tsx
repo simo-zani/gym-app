@@ -36,14 +36,15 @@ export function BottomNav() {
       <nav
         className="flex w-full items-center justify-around rounded-[2rem] px-2 py-2 mb-2"
         style={{
-          background: 'rgba(255, 255, 255, 0.06)',
-          backdropFilter: 'blur(36px) saturate(200%)',
-          WebkitBackdropFilter: 'blur(36px) saturate(200%)',
-          border: '1px solid rgba(255, 255, 255, 0.15)',
+          background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.02) 40%, rgba(255, 255, 255, 0.06) 100%)',
+          backdropFilter: 'blur(40px) saturate(220%)',
+          WebkitBackdropFilter: 'blur(40px) saturate(220%)',
+          border: '1px solid rgba(255, 255, 255, 0.12)',
           boxShadow:
-            'inset 0 1px 0 rgba(255,255,255,0.15), ' +
-            '0 4px 6px rgba(0,0,0,0.2), ' +
-            '0 12px 40px rgba(0,0,0,0.35)',
+            'inset 0 1px 2px rgba(255, 255, 255, 0.3), ' +
+            'inset 0 -1px 1px rgba(0, 0, 0, 0.3), ' +
+            '0 4px 12px rgba(0, 0, 0, 0.25), ' +
+            '0 16px 48px rgba(0, 0, 0, 0.45)',
         }}
       >
         {TABS.map(({ to, labelKey, icon: Icon }) => (

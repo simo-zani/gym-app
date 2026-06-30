@@ -129,7 +129,7 @@ export function ExercisesPage() {
         {/* Search - Liquid glass + sticky (stays on top) */}
         <div
           ref={searchRef}
-          className="sticky top-3 z-30 mx-auto flex items-center gap-2 overflow-hidden rounded-xl"
+          className="sticky z-30 mx-auto flex items-center gap-2 overflow-hidden rounded-xl"
           style={{
             width: isSticky && !isFocused ? '90%' : '100%',
             maxWidth: isSticky && !isFocused ? '320px' : '100%',
@@ -146,6 +146,7 @@ export function ExercisesPage() {
             border: '1px solid rgba(255, 255, 255, 0.12)',
             boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.1)',
             transition: 'all 450ms cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+            top: 'calc(0.75rem + env(safe-area-inset-top))',
           }}
         >
           <Search size={isSticky && !isFocused ? 16 : 18} className="text-slate-500 flex-shrink-0" style={{ transition: 'all 450ms cubic-bezier(0.25, 0.46, 0.45, 0.94)' }} />

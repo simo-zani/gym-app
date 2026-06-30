@@ -64,7 +64,12 @@ export function AppShell({
           </header>
         </>
       )}
-      <main className={`flex-1 px-4 py-5 ${contentClassName}`}>{children}</main>
+      <main 
+        className={`flex-1 px-4 pb-5 ${contentClassName}`}
+        style={{ paddingTop: !(title || onBack || action) ? 'calc(1.25rem + env(safe-area-inset-top))' : '1.25rem' }}
+      >
+        {children}
+      </main>
       {footer && (
         <div className="sticky bottom-0 z-20 border-t border-bg-2 bg-bg-0/95 px-4 py-4 backdrop-blur">
           {footer}
