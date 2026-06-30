@@ -16,14 +16,6 @@ export function TabLayout() {
         <Outlet />
       </div>
 
-      {/* Gradient fade before bottom nav (depth effect) */}
-      <div
-        className="pointer-events-none fixed inset-x-0 bottom-20 z-20 mx-auto h-16 w-full max-w-md"
-        style={{
-          background: 'linear-gradient(to bottom, transparent, rgba(0,0,0,0.3))',
-        }}
-      />
-
       {/* Fixed bottom nav */}
       <BottomNav />
     </div>

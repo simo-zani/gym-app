@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { ChevronLeft } from 'lucide-react';
+import { useScroll } from '@/lib/ScrollContext';
 
 interface AppShellProps {
   title?: ReactNode;
@@ -25,10 +26,19 @@ export function AppShell({
   children,
   contentClassName = '',
 }: AppShellProps) {
+  const { scrollToTop } = useScroll();
+
   return (
     <div className="flex min-h-full flex-col">
       {(title || onBack || action) && (
         <>
+          {/* Status bar tap-to-top anchor (iOS style) */}
+          <button
+            onClick={scrollToTop}
+            className="absolute top-0 left-0 right-0 h-6 cursor-pointer"
+            style={{ height: 'env(safe-area-inset-top)' }}
+            aria-label="Torna in cima"
+          />
           <header
             className="sticky top-0 z-20 flex items-center gap-3 border-b border-bg-2 bg-bg-0/90 px-4 pb-4 backdrop-blur"
             style={{ paddingTop: 'calc(1rem + env(safe-area-inset-top))' }}
@@ -52,13 +62,6 @@ export function AppShell({
             </div>
             {action}
           </header>
-          {/* Gradient fade below header when content scrolls under */}
-          <div
-            className="sticky top-16 pointer-events-none h-3 z-10"
-            style={{
-              background: 'linear-gradient(to bottom, rgba(0,0,0,0.2), transparent)',
-            }}
-          />
         </>
       )}
       <main className={`flex-1 px-4 py-5 ${contentClassName}`}>{children}</main>

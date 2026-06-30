@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Search, Dumbbell, ChevronRight, Trash2 } from 'lucide-react';
 import { useSwipeAction } from '@/hooks/useSwipeAction';
@@ -28,6 +28,10 @@ export function ExercisesPage() {
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebouncedValue(search);
   const [muscles, setMuscles] = useState<MuscleGroup[]>([]);
+  const [isSticky, setIsSticky] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLElement | null>(null);
 
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Exercise | null>(null);
@@ -40,6 +44,21 @@ export function ExercisesPage() {
   const createMut = useCreateExercise();
   const updateMut = useUpdateExercise();
   const deleteMut = useDeleteExercise();
+
+  useEffect(() => {
+    if (!searchRef.current) return;
+    const scrollContainer = searchRef.current.closest('[class*="overflow-y-auto"]') as HTMLElement;
+    if (!scrollContainer) return;
+    scrollContainerRef.current = scrollContainer;
+
+    const handleScroll = () => {
+      const searchTop = searchRef.current?.getBoundingClientRect().top ?? 0;
+      setIsSticky(searchTop <= 0);
+    };
+
+    scrollContainer.addEventListener('scroll', handleScroll);
+    return () => scrollContainer.removeEventListener('scroll', handleScroll);
+  }, []);
 
   function toggleMuscle(m: MuscleGroup) {
     setMuscles((prev) => (prev.includes(m) ? prev.filter((x) => x !== m) : [...prev, m]));
@@ -92,33 +111,49 @@ export function ExercisesPage() {
 
   return (
     <>
-      <AppShell
-        title={t('exercises.title')}
-        subtitle={data ? `${data.length} ${t('exercises.exerciseCountSubtitle')}` : undefined}
-      >
-        {/* Search - Liquid glass + sticky */}
+      <AppShell>
+        {/* Title - scrollable, goes away when you scroll */}
+        <div className="mb-4 border-b border-bg-2 pb-4">
+          <h1 className="text-xl font-extrabold text-slate-100">{t('exercises.title')}</h1>
+          {data && <p className="mt-0.5 text-xs text-slate-400">{data.length} {t('exercises.exerciseCountSubtitle')}</p>}
+        </div>
+
+        {/* Search - Liquid glass + sticky (stays on top) */}
         <div
-          className="sticky top-0 z-10 -mx-4 mb-3 flex items-center gap-2 rounded-xl px-3.5 py-2.5 backdrop-blur"
+          ref={searchRef}
+          className="sticky top-0 z-30 flex items-center gap-2 rounded-xl backdrop-blur transition-all duration-300"
           style={{
+            marginBottom: isSticky && !isFocused ? '0.5rem' : '0.75rem',
+            marginTop: isSticky && !isFocused ? '0.5rem' : '0',
+            paddingLeft: '0.875rem',
+            paddingRight: '0.875rem',
+            paddingTop: isSticky && !isFocused ? '0.5rem' : '0.625rem',
+            paddingBottom: isSticky && !isFocused ? '0.5rem' : '0.625rem',
             background: 'rgba(255, 255, 255, 0.05)',
             backdropFilter: 'blur(32px) saturate(200%)',
             WebkitBackdropFilter: 'blur(32px) saturate(200%)',
             border: '1px solid rgba(255, 255, 255, 0.12)',
             boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.1)',
-            marginLeft: '-1rem',
-            marginRight: '-1rem',
-            paddingLeft: 'calc(0.875rem + 1rem)',
-            paddingRight: 'calc(0.875rem + 1rem)',
           }}
         >
-          <Search size={18} className="text-slate-500 flex-shrink-0" />
+          <Search size={isSticky && !isFocused ? 16 : 18} className="text-slate-500 flex-shrink-0 transition-all" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
             placeholder={t('exercises.searchPlaceholder')}
             className="w-full bg-transparent text-sm text-slate-100 placeholder:text-slate-500 outline-none"
           />
         </div>
+
+        {/* Gradient fade in - content fades in below search bar */}
+        <div
+          className="h-3 pointer-events-none"
+          style={{
+            background: 'linear-gradient(to bottom, rgba(6,11,26,0.8), transparent)',
+          }}
+        />
 
         {/* Muscle filter chips */}
         <div className="mb-4 flex flex-wrap gap-2">
@@ -171,6 +206,18 @@ export function ExercisesPage() {
               </li>
             ))}
           </ul>
+        )}
+
+        {/* Gradient fade out - content fades out before bottom nav */}
+        {data && data.length > 0 && (
+          <div
+            className="pointer-events-none"
+            style={{
+              background: 'linear-gradient(to bottom, rgba(6,11,26,0), rgba(6,11,26,1))',
+              height: '6rem',
+              marginTop: '0.5rem',
+            }}
+          />
         )}
       </AppShell>
 
