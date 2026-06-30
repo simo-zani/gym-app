@@ -156,7 +156,7 @@ export function ExercisesPage() {
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
             placeholder={t('exercises.searchPlaceholder')}
-            className="w-full bg-transparent text-sm text-slate-100 placeholder:text-slate-500 outline-none"
+            className="w-full bg-transparent text-base text-slate-100 placeholder:text-slate-500 outline-none"
           />
         </div>
 

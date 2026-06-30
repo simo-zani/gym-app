@@ -22,7 +22,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
         <select
           ref={ref}
           id={id}
-          className={`w-full appearance-none rounded-xl border border-bg-3 bg-bg-1 px-4 py-3 pr-10 text-sm text-slate-100 outline-none transition focus:border-blueSoft focus:ring-2 focus:ring-blueGlow/30 ${className}`}
+          className={`w-full appearance-none rounded-xl border border-bg-3 bg-bg-1 px-4 py-3 pr-10 text-base text-slate-100 outline-none transition focus:border-blueSoft focus:ring-2 focus:ring-blueGlow/30 ${className}`}
           {...rest}
         >
           {children}

@@ -9,6 +9,8 @@
     margin: 0;
     padding: 0;
     overflow: hidden;
+    /* Disable Safari callout (long-press context menu) globally */
+    -webkit-touch-callout: none;
   }
 
   #root {
@@ -18,6 +20,13 @@
 
   body {
     @apply bg-bg-0 text-slate-100 font-sans antialiased;
+  }
+
+  /* Prevent long-press popup on all interactive elements */
+  a, button, [role="button"] {
+    -webkit-touch-callout: none;
+    user-select: none;
+    -webkit-user-select: none;
   }
 }
 
