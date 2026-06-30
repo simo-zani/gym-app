@@ -1,9 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
+import { computePlanDurationMinutes } from '@/lib/planDuration';
 import type {
   ExerciseMode,
   MuscleGroup,
   PlanExerciseWithExercise,
+  PyramidSet,
   WorkoutPlan,
 } from '@/types/db';
 
@@ -18,10 +20,22 @@ export const plansKeys = {
 export interface PlanListItem extends WorkoutPlan {
   exerciseCount: number;
   muscles: MuscleGroup[];
+  estimatedMinutes: number;
+}
+
+interface RawItem {
+  id: string;
+  mode: ExerciseMode;
+  sets: number;
+  reps: number | null;
+  duration_seconds: number | null;
+  rest_seconds: number;
+  pyramid_config: PyramidSet[] | null;
+  exercise: { muscle_group: MuscleGroup | null } | null;
 }
 
 interface RawPlanWithItems extends WorkoutPlan {
-  items: { id: string; exercise: { muscle_group: MuscleGroup | null } | null }[];
+  items: RawItem[];
 }
 
 export function usePlans() {
@@ -30,7 +44,9 @@ export function usePlans() {
     queryFn: async (): Promise<PlanListItem[]> => {
       const { data, error } = await supabase
         .from('workout_plans')
-        .select('*, items:workout_plan_exercises(id, exercise:exercises(muscle_group))')
+        .select(
+          '*, items:workout_plan_exercises(id, mode, sets, reps, duration_seconds, rest_seconds, pyramid_config, exercise:exercises(muscle_group))'
+        )
         .eq('is_archived', false)
         .order('updated_at', { ascending: false });
       if (error) throw error;
@@ -43,8 +59,9 @@ export function usePlans() {
               .filter((m): m is MuscleGroup => Boolean(m)),
           ),
         );
+        const estimatedMinutes = computePlanDurationMinutes(p.items);
         const { items, ...plan } = p;
-        return { ...plan, exerciseCount: items.length, muscles };
+        return { ...plan, exerciseCount: items.length, muscles, estimatedMinutes };
       });
     },
   });
@@ -87,14 +104,14 @@ export function usePlanExercises(planId: string | undefined) {
 export function useCreatePlan() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (name: string): Promise<WorkoutPlan> => {
+    mutationFn: async ({ name, difficulty = 3 }: { name: string; difficulty?: number }): Promise<WorkoutPlan> => {
       const { data: userData } = await supabase.auth.getUser();
       const userId = userData.user?.id;
       if (!userId) throw new Error('Utente non autenticato');
 
       const { data, error } = await supabase
         .from('workout_plans')
-        .insert({ name: name.trim(), user_id: userId })
+        .insert({ name: name.trim(), user_id: userId, difficulty })
         .select()
         .single();
       if (error) throw error;
@@ -110,7 +127,7 @@ export function useUpdatePlan() {
     mutationFn: async ({
       id,
       ...patch
-    }: { id: string } & Partial<Pick<WorkoutPlan, 'name' | 'notes' | 'is_archived' | 'is_favorite'>>): Promise<void> => {
+    }: { id: string } & Partial<Pick<WorkoutPlan, 'name' | 'notes' | 'is_archived' | 'is_favorite' | 'difficulty'>>): Promise<void> => {
       const { error } = await supabase.from('workout_plans').update(patch).eq('id', id);
       if (error) throw error;
     },
@@ -154,14 +171,14 @@ export function useDuplicatePlan() {
 
       const { data: original, error: planErr } = await supabase
         .from('workout_plans')
-        .select('name, notes')
+        .select('name, notes, difficulty')
         .eq('id', planId)
         .single();
       if (planErr) throw planErr;
 
       const { data: newPlan, error: insErr } = await supabase
         .from('workout_plans')
-        .insert({ name: `${original.name} (copia)`, notes: original.notes, user_id: userId })
+        .insert({ name: `${original.name} (copia)`, notes: original.notes, user_id: userId, difficulty: original.difficulty })
         .select()
         .single();
       if (insErr) throw insErr;
@@ -194,6 +211,7 @@ export interface PlanExerciseInput {
   weight_kg: number | null;
   rest_seconds: number;
   notes: string | null;
+  pyramid_config?: PyramidSet[] | null;
 }
 
 export function useAddPlanExercise(planId: string) {

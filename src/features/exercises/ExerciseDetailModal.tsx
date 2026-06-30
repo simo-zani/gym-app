@@ -175,65 +175,73 @@ export function ExerciseDetailModal({
   const isBodyweight = exercise.is_bodyweight || equipmentKey === 'none';
 
   return (
-    <Modal open={Boolean(exercise)} onClose={onClose} title={exercise.name}>
-      <div className="flex flex-col gap-4">
-        {/* Muscle Graphic Header */}
-        <div className="relative">
-          <MuscleSilhouette group={exercise.muscle_group} />
-          
-          {/* Muscle label overlay (left corner) - translated */}
-          <div className="absolute bottom-3 left-4 flex flex-col gap-0.5">
-            <span className="text-[9px] font-semibold uppercase tracking-wider text-slate-500">
-              {t('exercises.targetArea')}
-            </span>
-            <span className="text-xs font-bold text-slate-200 uppercase">
-              {t(muscleGroupLabelKey(exercise.muscle_group))}
-            </span>
+    <Modal
+      open={Boolean(exercise)}
+      onClose={onClose}
+      title={exercise.name}
+      stickyContent={
+        <div className="flex flex-col gap-3">
+          {/* Muscle Graphic */}
+          <div className="relative">
+            <MuscleSilhouette group={exercise.muscle_group} />
+            
+            {/* Muscle label overlay (left corner) - translated */}
+            <div className="absolute bottom-3 left-4 flex flex-col gap-0.5">
+              <span className="text-[9px] font-semibold uppercase tracking-wider text-slate-500">
+                {t('exercises.targetArea')}
+              </span>
+              <span className="text-xs font-bold text-slate-200 uppercase">
+                {t(muscleGroupLabelKey(exercise.muscle_group))}
+              </span>
+            </div>
+
+            {/* Floated Edit Pencil button (bottom right corner) */}
+            <button
+              onClick={() => onEdit(exercise)}
+              className="absolute bottom-3 right-4 flex h-8 w-8 items-center justify-center rounded-full bg-blueGlow/20 text-blueSoft border border-blueSoft/30 shadow-md transition active:scale-95 hover:bg-blueGlow hover:text-white"
+              aria-label={t('common.edit')}
+            >
+              <Pencil size={15} />
+            </button>
           </div>
 
-          {/* Floated Edit Pencil button (bottom right corner) */}
-          <button
-            onClick={() => onEdit(exercise)}
-            className="absolute bottom-3 right-4 flex h-8 w-8 items-center justify-center rounded-full bg-blueGlow/20 text-blueSoft border border-blueSoft/30 shadow-md transition active:scale-95 hover:bg-blueGlow hover:text-white"
-            aria-label={t('common.edit')}
-          >
-            <Pencil size={15} />
-          </button>
-        </div>
+          {/* Quick Info Tags */}
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-bg-2 bg-bg-1 p-3.5">
+            <div className="flex flex-col gap-1">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                {t('exercises.muscleGroup')}
+              </span>
+              <MuscleGroupBadge group={exercise.muscle_group} />
+            </div>
 
-        {/* Quick Info Tags */}
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-bg-2 bg-bg-1 p-3.5">
-          <div className="flex flex-col gap-1">
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
-              {t('exercises.muscleGroup')}
-            </span>
-            <MuscleGroupBadge group={exercise.muscle_group} />
-          </div>
-
-          <div className="flex flex-col items-end gap-1">
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
-              {t('exercises.equipment')}
-            </span>
-            <div className="flex items-center gap-1.5 rounded-md bg-bg-2 px-2.5 py-1 text-xs font-semibold text-slate-200">
-              {isBodyweight ? (
-                <>
-                  <Activity size={12} className="text-emerald-400" />
-                  <span>{t('exercises.equipmentTypes.none')}</span>
-                </>
-              ) : (
-                <>
-                  {equipmentKey === 'dumbbell' && <Dumbbell size={12} className="text-amber-400" />}
-                  {equipmentKey === 'barbell' && <Dumbbell size={12} className="text-blueSoft" />}
-                  {equipmentKey === 'kettlebell' && <Dumbbell size={12} className="text-red-400" />}
-                  {equipmentKey === 'cable' && <Layers size={12} className="text-purple-400" />}
-                  {equipmentKey === 'machine' && <Cpu size={12} className="text-cyan-400" />}
-                  <span>{t(`exercises.equipmentTypes.${equipmentKey}`)}</span>
-                </>
-              )}
+            <div className="flex flex-col items-end gap-1">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                {t('exercises.equipment')}
+              </span>
+              <div className="flex items-center gap-1.5 rounded-md bg-bg-2 px-2.5 py-1 text-xs font-semibold text-slate-200">
+                {isBodyweight ? (
+                  <>
+                    <Activity size={12} className="text-emerald-400" />
+                    <span>{t('exercises.equipmentTypes.none')}</span>
+                  </>
+                ) : (
+                  <>
+                    {equipmentKey === 'dumbbell' && <Dumbbell size={12} className="text-amber-400" />}
+                    {equipmentKey === 'barbell' && <Dumbbell size={12} className="text-blueSoft" />}
+                    {equipmentKey === 'kettlebell' && <Dumbbell size={12} className="text-red-400" />}
+                    {equipmentKey === 'cable' && <Layers size={12} className="text-purple-400" />}
+                    {equipmentKey === 'machine' && <Cpu size={12} className="text-cyan-400" />}
+                    <span>{t(`exercises.equipmentTypes.${equipmentKey}`)}</span>
+                  </>
+                )}
+              </div>
             </div>
           </div>
         </div>
-
+      }
+    >
+      {/* Scrollable: description + actions */}
+      <div className="flex flex-col gap-4">
         {/* Description Section */}
         <div className="flex flex-col gap-1.5">
           <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">

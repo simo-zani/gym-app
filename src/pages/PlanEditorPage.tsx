@@ -19,13 +19,14 @@ import {
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Play, Plus, MoreVertical, Pencil, Copy, Archive, Trash2 } from 'lucide-react';
+import { Play, Plus, MoreVertical, Pencil, Trash2 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
 import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
+import { Select } from '@/components/ui/Select';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { AddExerciseModal } from '@/features/plans/AddExerciseModal';
 import { PlanExerciseConfigSheet } from '@/features/plans/PlanExerciseConfigSheet';
@@ -39,7 +40,6 @@ import {
   useReorderPlanExercises,
   useUpdatePlan,
   useDeletePlan,
-  useDuplicatePlan,
   type PlanExerciseInput,
 } from '@/features/plans/hooks';
 import type { Exercise, PlanExerciseWithExercise } from '@/types/db';
@@ -48,6 +48,7 @@ const renameSchema = (t: (key: string) => string) =>
   z.object({
     name: z.string().min(1, t('plans.name')),
     notes: z.string().optional(),
+    difficulty: z.coerce.number().min(1).max(5),
   });
 type RenameForm = z.infer<ReturnType<typeof renameSchema>>;
 
@@ -71,7 +72,6 @@ export function PlanEditorPage() {
   const reorderMut = useReorderPlanExercises(id!);
   const updatePlanMut = useUpdatePlan();
   const deletePlanMut = useDeletePlan();
-  const duplicateMut = useDuplicatePlan();
 
   // Local order mirrors the query so drag&drop can be optimistic.
   const [order, setOrder] = useState<PlanExerciseWithExercise[]>([]);
@@ -120,12 +120,16 @@ export function PlanEditorPage() {
   }
 
   function openRename() {
-    reset({ name: planQuery.data?.name ?? '', notes: planQuery.data?.notes ?? '' });
+    reset({
+      name: planQuery.data?.name ?? '',
+      notes: planQuery.data?.notes ?? '',
+      difficulty: planQuery.data?.difficulty ?? 3,
+    });
     setRenameOpen(true);
   }
 
-  const submitRename = handleSubmit(async ({ name, notes }) => {
-    await updatePlanMut.mutateAsync({ id: id!, name, notes: notes?.trim() || null });
+  const submitRename = handleSubmit(async ({ name, notes, difficulty }) => {
+    await updatePlanMut.mutateAsync({ id: id!, name, notes: notes?.trim() || null, difficulty });
     setRenameOpen(false);
   });
 
@@ -177,10 +181,7 @@ export function PlanEditorPage() {
       <AppShell
         onBack={() => navigate('/')}
         title={
-          <button onClick={openRename} className="flex items-center gap-1.5 text-left">
-            <span className="truncate text-lg font-extrabold text-slate-100">{plan.name}</span>
-            <Pencil size={15} className="flex-none text-slate-500" />
-          </button>
+          <span className="truncate text-lg font-extrabold text-slate-100">{plan.name}</span>
         }
         subtitle={t('plans.editorTitle')}
         action={
@@ -195,23 +196,12 @@ export function PlanEditorPage() {
             {menuOpen && (
               <div className="absolute right-0 top-11 z-30 w-44 overflow-hidden rounded-xl border border-bg-3 bg-bg-2 shadow-xl">
                 <MenuItem
-                  icon={Copy}
-                  labelKey="plans.duplicatePlan"
+                  icon={Pencil}
+                  labelKey="plans.editPlan"
                   t={t}
-                  onClick={async () => {
+                  onClick={() => {
                     setMenuOpen(false);
-                    const copy = await duplicateMut.mutateAsync(plan.id);
-                    navigate(`/plans/${copy.id}`);
-                  }}
-                />
-                <MenuItem
-                  icon={Archive}
-                  labelKey="plans.archivePlan"
-                  t={t}
-                  onClick={async () => {
-                    setMenuOpen(false);
-                    await updatePlanMut.mutateAsync({ id: plan.id, is_archived: true });
-                    navigate('/');
+                    openRename();
                   }}
                 />
                 <MenuItem
@@ -314,6 +304,18 @@ export function PlanEditorPage() {
       <Modal open={renameOpen} onClose={() => setRenameOpen(false)} title={t('plans.editPlan')}>
         <form onSubmit={submitRename} className="flex flex-col gap-4">
           <Input id="plan-rename" label={t('plans.name')} error={errors.name?.message} {...register('name')} />
+          <Select
+            id="plan-difficulty"
+            label={t('plans.difficulty')}
+            error={errors.difficulty?.message}
+            {...register('difficulty')}
+          >
+            <option value="1">{t('plans.difficultyLevels.1')}</option>
+            <option value="2">{t('plans.difficultyLevels.2')}</option>
+            <option value="3">{t('plans.difficultyLevels.3')}</option>
+            <option value="4">{t('plans.difficultyLevels.4')}</option>
+            <option value="5">{t('plans.difficultyLevels.5')}</option>
+          </Select>
           <Textarea id="plan-notes" label={t('plans.notes')} {...register('notes')} />
           <div className="flex gap-3">
             <Button type="button" variant="ghost" onClick={() => setRenameOpen(false)} className="flex-1">
@@ -367,7 +369,7 @@ function MenuItem({
   onClick,
   danger,
 }: {
-  icon: typeof Copy;
+  icon: React.ComponentType<any>;
   labelKey: string;
   t: (key: string) => string;
   onClick: () => void;

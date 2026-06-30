@@ -9,7 +9,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { workoutRepository } from './workoutRepository';
-import type { ExerciseMode } from '@/types/db';
+import type { ExerciseMode, PyramidSet } from '@/types/db';
 
 // ─── Domain types ────────────────────────────────────────────────────────────
 
@@ -25,6 +25,8 @@ export interface ExerciseInSession {
   weightKg: number | null;
   restSeconds: number;
   notes: string | null;
+  /** Populated when mode === 'pyramid'; null otherwise. */
+  pyramidConfig: PyramidSet[] | null;
 }
 
 export interface SetResult {
@@ -40,14 +42,26 @@ export interface SetResult {
 export type Phase =
   | { kind: 'idle' }
   | { kind: 'starting' }
+  | { kind: 'warmup'; targetEpochMs: number; isPaused?: boolean; pausedSecondsLeft?: number }
   | { kind: 'exercising' }
-  | { kind: 'timed_running'; targetEpochMs: number }
+  | { kind: 'timed_running'; targetEpochMs: number; isPaused?: boolean; pausedSecondsLeft?: number }
   | {
       kind: 'resting';
       restTargetEpochMs: number;
       nextExerciseIndex: number;
       nextSetNumber: number;
+      isPaused?: boolean;
+      pausedSecondsLeft?: number;
     }
+  | {
+      kind: 'cooldown';
+      targetEpochMs: number;
+      nextExerciseIndex: number;
+      nextSetNumber: number;
+      isPaused?: boolean;
+      pausedSecondsLeft?: number;
+    }
+  | { kind: 'exercise_hub'; nextExerciseIndex: number }
   | { kind: 'completed' };
 
 // ─── Store types ─────────────────────────────────────────────────────────────
@@ -68,6 +82,8 @@ interface WorkoutState {
   editWeight: number | null;
   /** Whether a DB write is in progress. */
   saving: boolean;
+  /** Start time of the current exercise, used for calculating elapsed exercise time. */
+  currentExerciseStartedAtMs: number | null;
 }
 
 interface WorkoutActions {
@@ -102,6 +118,24 @@ interface WorkoutActions {
   /** Skip the rest immediately. */
   skipRest: () => void;
 
+  /** Called when warmup countdown reaches 0 (or user skips). */
+  onWarmupEnd: () => void;
+
+  /** Skip warmup immediately. */
+  skipWarmup: () => void;
+
+  /** Called when cooldown countdown reaches 0 (or user skips). Transitions to resting for next exercise. */
+  onCooldownEnd: () => void;
+
+  /** Skip cooldown immediately. */
+  skipCooldown: () => void;
+
+  /** Toggle pause on active countdown timers. */
+  togglePause: () => void;
+
+  /** Transitions phase from exercise hub to next exercise's rest timer. */
+  startNextExerciseAfterHub: () => void;
+
   /** Finish the workout session (write ended_at + notes). */
   finish: (notes?: string) => Promise<void>;
 
@@ -126,6 +160,7 @@ const INITIAL: WorkoutState = {
   editReps: 0,
   editWeight: null,
   saving: false,
+  currentExerciseStartedAtMs: null,
 };
 
 // ─── Store ────────────────────────────────────────────────────────────────────
@@ -156,9 +191,11 @@ export const useWorkoutStore = create<WorkoutStore>()(
           set({
             sessionId,
             startedAtMs: Date.now(),
+            currentExerciseStartedAtMs: Date.now(),
             currentExerciseIndex: 0,
             currentSetNumber: 1,
-            phase: { kind: 'exercising' },
+            // Start with a 10s warmup before the first set
+            phase: { kind: 'warmup', targetEpochMs: Date.now() + 10_000 },
             editReps: first.reps ?? 0,
             editWeight: first.weightKg,
             saving: false,
@@ -186,10 +223,16 @@ export const useWorkoutStore = create<WorkoutStore>()(
         } = state;
 
         const ex = exercises[currentExerciseIndex];
-        const isTimedMode = ex.mode === 'time';
 
-        const repsDone = isTimedMode ? null : editReps;
-        const durationDone = isTimedMode
+        // Resolve the effective mode for this set (pyramid can mix reps/time per set)
+        let effectiveIsTimedMode = ex.mode === 'time';
+        if (ex.mode === 'pyramid' && ex.pyramidConfig) {
+          const cfg = ex.pyramidConfig[currentSetNumber - 1] ?? ex.pyramidConfig[ex.pyramidConfig.length - 1];
+          effectiveIsTimedMode = cfg.mode === 'time';
+        }
+
+        const repsDone = effectiveIsTimedMode ? null : editReps;
+        const durationDone = effectiveIsTimedMode
           ? (overrides?.durationSecondsDone ?? ex.durationSeconds ?? 0)
           : null;
 
@@ -239,6 +282,34 @@ export const useWorkoutStore = create<WorkoutStore>()(
         const nextSetNumber = isLastSet ? 1 : currentSetNumber + 1;
         const restMs = ex.restSeconds * 1000;
 
+        // If we finished the last set of an exercise, transition to the hub screen!
+        if (isLastSet && !isLastExercise) {
+          const hasCooldown = ex.mode === 'time' || ex.mode === 'pyramid';
+          if (hasCooldown) {
+            set({
+              sets: newSets,
+              saving: false,
+              phase: {
+                kind: 'cooldown',
+                targetEpochMs: Date.now() + 30_000,
+                nextExerciseIndex,
+                nextSetNumber,
+              },
+            });
+            return;
+          }
+
+          set({
+            sets: newSets,
+            saving: false,
+            phase: {
+              kind: 'exercise_hub',
+              nextExerciseIndex,
+            },
+          });
+          return;
+        }
+
         set({
           sets: newSets,
           saving: false,
@@ -251,11 +322,71 @@ export const useWorkoutStore = create<WorkoutStore>()(
         });
       },
 
+      // ── warmup ─────────────────────────────────────────────────────────────
+      onWarmupEnd: () => {
+        const { exercises, currentExerciseIndex } = get();
+        const ex = exercises[currentExerciseIndex];
+        if (!ex) {
+          set({ phase: { kind: 'exercising' } });
+          return;
+        }
+
+        let isTimed = ex.mode === 'time';
+        if (ex.mode === 'pyramid' && ex.pyramidConfig) {
+          const cfg = ex.pyramidConfig[0];
+          isTimed = cfg?.mode === 'time';
+        }
+
+        if (isTimed) {
+          let durationMs: number;
+          if (ex.mode === 'pyramid' && ex.pyramidConfig) {
+            const cfg = ex.pyramidConfig[0];
+            durationMs = (cfg.duration_seconds ?? 30) * 1000;
+          } else {
+            durationMs = (ex.durationSeconds ?? 30) * 1000;
+          }
+          set({ phase: { kind: 'timed_running', targetEpochMs: Date.now() + durationMs } });
+        } else {
+          set({ phase: { kind: 'exercising' } });
+        }
+      },
+
+      skipWarmup: () => get().onWarmupEnd(),
+
+      // ── cooldown ───────────────────────────────────────────────────────────
+      onCooldownEnd: () => {
+        const { phase } = get();
+        if (phase.kind !== 'cooldown') return;
+        const { nextExerciseIndex } = phase;
+        const nextEx = get().exercises[nextExerciseIndex];
+        if (!nextEx) {
+          // Last exercise, last set → workout done
+          set({ phase: { kind: 'completed' } });
+          return;
+        }
+        set({
+          phase: {
+            kind: 'exercise_hub',
+            nextExerciseIndex,
+          },
+        });
+      },
+
+      skipCooldown: () => get().onCooldownEnd(),
+
       // ── timed exercise ─────────────────────────────────────────────────────
       startTimedExercise: () => {
-        const ex = get().exercises[get().currentExerciseIndex];
-        const ms = (ex.durationSeconds ?? 30) * 1000;
-        set({ phase: { kind: 'timed_running', targetEpochMs: Date.now() + ms } });
+        const { exercises, currentExerciseIndex, currentSetNumber } = get();
+        const ex = exercises[currentExerciseIndex];
+
+        let durationMs: number;
+        if (ex.mode === 'pyramid' && ex.pyramidConfig) {
+          const cfg = ex.pyramidConfig[currentSetNumber - 1] ?? ex.pyramidConfig[ex.pyramidConfig.length - 1];
+          durationMs = (cfg.duration_seconds ?? 30) * 1000;
+        } else {
+          durationMs = (ex.durationSeconds ?? 30) * 1000;
+        }
+        set({ phase: { kind: 'timed_running', targetEpochMs: Date.now() + durationMs } });
       },
 
       onTimedEnd: async () => {
@@ -272,18 +403,66 @@ export const useWorkoutStore = create<WorkoutStore>()(
         if (phase.kind !== 'resting') return;
         const { nextExerciseIndex, nextSetNumber } = phase;
         const nextEx = exercises[nextExerciseIndex];
-        set({
-          currentExerciseIndex: nextExerciseIndex,
-          currentSetNumber: nextSetNumber,
-          phase: { kind: 'exercising' },
-          editReps: nextEx.reps ?? 0,
-          editWeight: nextEx.weightKg,
-        });
+
+        // For pyramid mode, load per-set target from pyramid_config
+        let nextEditReps = nextEx.reps ?? 0;
+        let nextEditWeight = nextEx.weightKg;
+        if (nextEx.mode === 'pyramid' && nextEx.pyramidConfig) {
+          const cfg = nextEx.pyramidConfig[nextSetNumber - 1] ?? nextEx.pyramidConfig[nextEx.pyramidConfig.length - 1];
+          nextEditReps = cfg.mode === 'reps' ? (cfg.reps ?? 0) : 0;
+          nextEditWeight = cfg.weight_kg;
+        }
+
+        // Set starting timestamp for next exercise if we are starting Set 1
+        const nextExerciseStartedAtMs = nextSetNumber === 1 ? Date.now() : get().currentExerciseStartedAtMs;
+
+        // Auto-start timed or timed pyramid exercises
+        let isNextTimed = nextEx.mode === 'time';
+        if (nextEx.mode === 'pyramid' && nextEx.pyramidConfig) {
+          const cfg = nextEx.pyramidConfig[nextSetNumber - 1] ?? nextEx.pyramidConfig[nextEx.pyramidConfig.length - 1];
+          isNextTimed = cfg.mode === 'time';
+        }
+
+        if (isNextTimed) {
+          let durationMs: number;
+          if (nextEx.mode === 'pyramid' && nextEx.pyramidConfig) {
+            const cfg = nextEx.pyramidConfig[nextSetNumber - 1] ?? nextEx.pyramidConfig[nextEx.pyramidConfig.length - 1];
+            durationMs = (cfg.duration_seconds ?? 30) * 1000;
+          } else {
+            durationMs = (nextEx.durationSeconds ?? 30) * 1000;
+          }
+
+          set({
+            currentExerciseIndex: nextExerciseIndex,
+            currentSetNumber: nextSetNumber,
+            phase: { kind: 'timed_running', targetEpochMs: Date.now() + durationMs },
+            editReps: nextEditReps,
+            editWeight: nextEditWeight,
+            currentExerciseStartedAtMs: nextExerciseStartedAtMs,
+          });
+        } else {
+          set({
+            currentExerciseIndex: nextExerciseIndex,
+            currentSetNumber: nextSetNumber,
+            phase: { kind: 'exercising' },
+            editReps: nextEditReps,
+            editWeight: nextEditWeight,
+            currentExerciseStartedAtMs: nextExerciseStartedAtMs,
+          });
+        }
       },
 
       adjustRest: (deltaSeconds) => {
         const { phase } = get();
         if (phase.kind !== 'resting') return;
+        
+        // If paused, adjust the remaining paused seconds instead
+        if (phase.isPaused) {
+          const newPaused = Math.max(1, (phase.pausedSecondsLeft ?? 0) + deltaSeconds);
+          set({ phase: { ...phase, pausedSecondsLeft: newPaused } });
+          return;
+        }
+
         const newTarget = Math.max(
           Date.now() + 1000, // minimum 1 second remaining
           phase.restTargetEpochMs + deltaSeconds * 1000,
@@ -292,6 +471,62 @@ export const useWorkoutStore = create<WorkoutStore>()(
       },
 
       skipRest: () => get().onRestEnd(),
+
+      togglePause: () => {
+        const { phase } = get();
+        const now = Date.now();
+
+        if (phase.kind === 'timed_running') {
+          if (phase.isPaused) {
+            const newTarget = now + (phase.pausedSecondsLeft ?? 0) * 1000;
+            set({ phase: { ...phase, isPaused: false, targetEpochMs: newTarget } });
+          } else {
+            const secondsLeft = Math.max(0, Math.ceil((phase.targetEpochMs - now) / 1000));
+            set({ phase: { ...phase, isPaused: true, pausedSecondsLeft: secondsLeft } });
+          }
+        } else if (phase.kind === 'resting') {
+          if (phase.isPaused) {
+            const newTarget = now + (phase.pausedSecondsLeft ?? 0) * 1000;
+            set({ phase: { ...phase, isPaused: false, restTargetEpochMs: newTarget } });
+          } else {
+            const secondsLeft = Math.max(0, Math.ceil((phase.restTargetEpochMs - now) / 1000));
+            set({ phase: { ...phase, isPaused: true, pausedSecondsLeft: secondsLeft } });
+          }
+        } else if (phase.kind === 'warmup') {
+          if (phase.isPaused) {
+            const newTarget = now + (phase.pausedSecondsLeft ?? 0) * 1000;
+            set({ phase: { ...phase, isPaused: false, targetEpochMs: newTarget } });
+          } else {
+            const secondsLeft = Math.max(0, Math.ceil((phase.targetEpochMs - now) / 1000));
+            set({ phase: { ...phase, isPaused: true, pausedSecondsLeft: secondsLeft } });
+          }
+        } else if (phase.kind === 'cooldown') {
+          if (phase.isPaused) {
+            const newTarget = now + (phase.pausedSecondsLeft ?? 0) * 1000;
+            set({ phase: { ...phase, isPaused: false, targetEpochMs: newTarget } });
+          } else {
+            const secondsLeft = Math.max(0, Math.ceil((phase.targetEpochMs - now) / 1000));
+            set({ phase: { ...phase, isPaused: true, pausedSecondsLeft: secondsLeft } });
+          }
+        }
+      },
+
+      startNextExerciseAfterHub: () => {
+        const { phase, exercises } = get();
+        if (phase.kind !== 'exercise_hub') return;
+        const { nextExerciseIndex } = phase;
+        const nextEx = exercises[nextExerciseIndex];
+        if (!nextEx) return;
+
+        set({
+          phase: {
+            kind: 'resting',
+            restTargetEpochMs: Date.now() + nextEx.restSeconds * 1000,
+            nextExerciseIndex,
+            nextSetNumber: 1,
+          },
+        });
+      },
 
       // ── finish ─────────────────────────────────────────────────────────────
       finish: async (notes) => {

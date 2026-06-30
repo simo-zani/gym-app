@@ -9,6 +9,9 @@ import { useWorkoutStore, type ExerciseInSession } from '@/features/workout/useW
 import { RepsExerciseScreen } from '@/features/workout/RepsExerciseScreen';
 import { TimedExerciseScreen } from '@/features/workout/TimedExerciseScreen';
 import { RestScreen } from '@/features/workout/RestScreen';
+import { WarmupScreen } from '@/features/workout/WarmupScreen';
+import { CooldownScreen } from '@/features/workout/CooldownScreen';
+import { ExerciseHubScreen } from '@/features/workout/ExerciseHubScreen';
 import { WorkoutSummaryScreen } from '@/features/workout/WorkoutSummaryScreen';
 import { unlockAudio } from '@/features/workout/audio';
 import type { PlanExerciseWithExercise } from '@/types/db';
@@ -75,6 +78,7 @@ export function WorkoutRunnerPage() {
       weightKg: item.weight_kg,
       restSeconds: item.rest_seconds,
       notes: item.notes,
+      pyramidConfig: item.pyramid_config ?? null,
     }));
 
     unlockAudio();
@@ -140,11 +144,22 @@ export function WorkoutRunnerPage() {
   return (
     <div className="mx-auto min-h-screen w-full max-w-md bg-bg-0">
       {/* Phase router */}
+      {phase.kind === 'warmup' && (
+        <WarmupScreen onExitRequest={() => setExitOpen(true)} />
+      )}
       {phase.kind === 'exercising' && (() => {
-        const { exercises, currentExerciseIndex } = useWorkoutStore.getState();
+        const { exercises, currentExerciseIndex, currentSetNumber } = useWorkoutStore.getState();
         const ex = exercises[currentExerciseIndex];
         if (!ex) return null;
-        if (ex.mode === 'reps') return <RepsExerciseScreen onExitRequest={() => setExitOpen(true)} />;
+
+        // Resolve effective mode for this set
+        let effectiveMode: 'reps' | 'time' = ex.mode === 'time' ? 'time' : 'reps';
+        if (ex.mode === 'pyramid' && ex.pyramidConfig) {
+          const cfg = ex.pyramidConfig[currentSetNumber - 1] ?? ex.pyramidConfig[ex.pyramidConfig.length - 1];
+          effectiveMode = cfg.mode;
+        }
+
+        if (effectiveMode === 'reps') return <RepsExerciseScreen onExitRequest={() => setExitOpen(true)} />;
         return <TimedExerciseScreen onExitRequest={() => setExitOpen(true)} />;
       })()}
       {phase.kind === 'timed_running' && (
@@ -152,6 +167,12 @@ export function WorkoutRunnerPage() {
       )}
       {phase.kind === 'resting' && (
         <RestScreen onExitRequest={() => setExitOpen(true)} />
+      )}
+      {phase.kind === 'cooldown' && (
+        <CooldownScreen onExitRequest={() => setExitOpen(true)} />
+      )}
+      {phase.kind === 'exercise_hub' && (
+        <ExerciseHubScreen onExitRequest={() => setExitOpen(true)} />
       )}
       {phase.kind === 'completed' && <WorkoutSummaryScreen />}
 

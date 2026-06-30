@@ -1,0 +1,145 @@
+/**
+ * WarmupScreen — 10-second preparation countdown shown before the first set.
+ * The user can skip it by pressing the "Salta" button.
+ */
+import { useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
+import { SkipForward } from 'lucide-react';
+import { useWorkoutStore } from './useWorkoutStore';
+import { useCountdown, formatTime } from './useCountdown';
+import { Button } from '@/components/ui/Button';
+import { ExerciseProgressBar } from './ExerciseProgressBar';
+
+interface Props {
+  onExitRequest: () => void;
+}
+
+export function WarmupScreen({ onExitRequest }: Props) {
+  const { t } = useTranslation();
+  const {
+    exercises,
+    currentExerciseIndex,
+    phase,
+    onWarmupEnd,
+    skipWarmup,
+  } = useWorkoutStore();
+
+  if (phase.kind !== 'warmup') return null;
+
+  const ex = exercises[currentExerciseIndex];
+  if (!ex) return null;
+
+  const handleWarmupEnd = useCallback(() => {
+    onWarmupEnd();
+  }, [onWarmupEnd]);
+
+  const secondsLeft = useCountdown(true, phase.targetEpochMs, handleWarmupEnd);
+  const progress = Math.max(0, Math.min(1, secondsLeft / 10));
+
+  const radius = 96;
+  const circumference = 2 * Math.PI * radius;
+  const strokeDashoffset = circumference * (1 - progress);
+
+  return (
+    <div className="flex min-h-full flex-col">
+      {/* ── Header ─────────────────────────────────────────────── */}
+      <div className="flex items-center justify-between px-5 pt-5 pb-3">
+        <div className="flex flex-col">
+          <span className="text-xs font-semibold uppercase tracking-widest text-successGreen">
+            {t('workout.preparation')}
+          </span>
+          <h1 className="mt-0.5 text-xl font-extrabold leading-tight text-slate-100">
+            {ex.exerciseName}
+          </h1>
+          {ex.notes && (
+            <p className="mt-1 text-xs text-slate-400 italic">{ex.notes}</p>
+          )}
+        </div>
+        <button
+          onClick={onExitRequest}
+          className="rounded-lg px-3 py-1.5 text-xs font-semibold text-dangerRed transition hover:bg-bg-2 hover:text-red-400"
+        >
+          {t('workout.exit')}
+        </button>
+      </div>
+
+      {/* ── Progress Bar ───────────────────────────────────────── */}
+      <div className="px-5 pb-3">
+        <ExerciseProgressBar
+          totalSets={ex.totalSets}
+          currentPhase="warmup"
+          currentSet={1}
+          currentProgress={1 - progress}
+        />
+      </div>
+
+      {/* ── Set pill ───────────────────────────────────────────── */}
+      <div className="px-5 pb-4">
+        <div className="inline-flex items-center gap-1.5 rounded-full bg-successGreen/15 px-3 py-1">
+          <span className="text-sm font-bold text-successGreen">
+            {t('workout.timedExercise')}
+          </span>
+        </div>
+      </div>
+
+      {/* ── Circular Warmup countdown ──────────────────────────── */}
+      <div className="flex flex-1 flex-col items-center justify-center gap-6">
+        <div className="relative flex items-center justify-center">
+          <svg width="240" height="240" className="-rotate-90">
+            <circle
+              cx="120"
+              cy="120"
+              r={radius}
+              fill="none"
+              stroke="rgba(16,185,129,0.12)"
+              strokeWidth="10"
+            />
+            <circle
+              cx="120"
+              cy="120"
+              r={radius}
+              fill="none"
+              stroke="#10b981"
+              strokeWidth="10"
+              strokeLinecap="round"
+              strokeDasharray={circumference}
+              strokeDashoffset={strokeDashoffset}
+              style={{ transition: 'stroke-dashoffset 0.1s linear' }}
+            />
+          </svg>
+          <div className="absolute flex flex-col items-center justify-center text-center">
+            <span className="text-xs font-semibold uppercase tracking-widest text-successGreen/60 mb-1">
+              {t('workout.getReady')}
+            </span>
+            <span
+              className="text-6xl font-black tabular-nums text-successGreen"
+              style={{ fontVariantNumeric: 'tabular-nums' }}
+            >
+              {formatTime(secondsLeft)}
+            </span>
+          </div>
+        </div>
+
+        <p className="text-sm text-slate-400 text-center px-8">
+          {t('workout.preparationHint')}
+        </p>
+      </div>
+
+      {/* ── CTA ────────────────────────────────────────────────── */}
+      <div
+        className="sticky bottom-0 flex flex-col gap-3 bg-gradient-to-t from-bg-0 via-bg-0/95 to-transparent px-5 pb-8 pt-4"
+        style={{ paddingBottom: 'max(2rem, env(safe-area-inset-bottom))' }}
+      >
+        <Button
+          id="btn-skip-warmup"
+          variant="success"
+          className="flex w-full items-center justify-center gap-2 py-4 text-base font-bold"
+          onClick={skipWarmup}
+        >
+          <SkipForward size={20} />
+          {t('workout.skip')}
+        </Button>
+      </div>
+    </div>
+  );
+}

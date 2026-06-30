@@ -65,6 +65,11 @@ export function playSetDone(): void {
   playBeep(660, 120, 0.2);
 }
 
+/** Warning beep for countdown ticks. */
+export function playCountdownTick(isHigh = false): void {
+  playBeep(isHigh ? 980 : 580, 100, 0.25);
+}
+
 /** Vibration pattern for rest end (Android; no-op on iOS). */
 export function vibrateRestEnd(): void {
   if ('vibrate' in navigator) {

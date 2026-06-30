@@ -1,4 +1,5 @@
 import { Outlet } from 'react-router-dom';
+import { useEffect } from 'react';
 import { useScroll } from '@/lib/ScrollContext';
 import { BottomNav } from './BottomNav';
 
@@ -7,7 +8,20 @@ import { BottomNav } from './BottomNav';
  * Fixed viewport: scrollable content + fixed bottom nav (iOS style).
  */
 export function TabLayout() {
-  const { setScrollRef } = useScroll();
+  const { setScrollRef, scrollToTop } = useScroll();
+
+  // Tap on status bar / Dynamic Island area → scroll to top (native iOS behavior)
+  useEffect(() => {
+    const handler = (e: TouchEvent) => {
+      const touch = e.touches[0];
+      // Status bar zone: top ~54px (safe area inset + tap target)
+      if (touch && touch.clientY < 54) {
+        scrollToTop();
+      }
+    };
+    document.addEventListener('touchstart', handler, { passive: true });
+    return () => document.removeEventListener('touchstart', handler);
+  }, [scrollToTop]);
 
   return (
     <div className="mx-auto h-screen w-full max-w-md flex flex-col bg-bg-0">

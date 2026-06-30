@@ -1,9 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Search, Dumbbell, ChevronRight, Trash2 } from 'lucide-react';
+import { Search, Dumbbell, ChevronRight, Trash2, Plus } from 'lucide-react';
 import { useSwipeAction } from '@/hooks/useSwipeAction';
 import { AppShell } from '@/components/layout/AppShell';
-import { Fab } from '@/components/ui/Fab';
 import { Spinner } from '@/components/ui/Spinner';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
@@ -121,9 +120,18 @@ export function ExercisesPage() {
     <>
       <AppShell>
         {/* Title - scrollable, goes away when you scroll */}
-        <div className="relative z-[20] mb-4 border-b border-bg-2 pb-4">
-          <h1 className="text-xl font-extrabold text-slate-100">{t('exercises.title')}</h1>
-          {data && <p className="mt-0.5 text-xs text-slate-400">{data.length} {t('exercises.exerciseCountSubtitle')}</p>}
+        <div className="relative z-[20] mb-4 border-b border-bg-2 pb-4 flex justify-between items-center">
+          <div>
+            <h1 className="text-xl font-extrabold text-slate-100">{t('exercises.title')}</h1>
+            {data && <p className="mt-0.5 text-xs text-slate-400">{data.length} {t('exercises.exerciseCountSubtitle')}</p>}
+          </div>
+          <button
+            onClick={openCreate}
+            aria-label={t('exercises.newExercise')}
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-blueGlow/25 text-blueSoft border border-blueSoft/30 shadow-md transition-all duration-150 active:scale-120 hover:bg-blueGlow hover:text-white"
+          >
+            <Plus size={18} />
+          </button>
         </div>
 
         {/* Search - Liquid glass + sticky (stays on top) */}
@@ -202,7 +210,7 @@ export function ExercisesPage() {
         )}
 
         {data && data.length > 0 && (
-          <ul className="flex flex-col gap-2 pb-24">
+          <ul className="flex flex-col gap-2 pb-36">
             {data.map((ex) => (
               <li key={ex.id}>
                 <SwipeableExerciseItem
@@ -215,8 +223,6 @@ export function ExercisesPage() {
           </ul>
         )}
       </AppShell>
-
-      <Fab onClick={openCreate} label={t('exercises.newExercise')} />
 
       <ExerciseFormModal
         open={formOpen}
