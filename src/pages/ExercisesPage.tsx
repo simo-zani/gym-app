@@ -9,7 +9,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { MuscleGroupBadge } from '@/components/ui/MuscleGroupBadge';
 import { useDebouncedValue } from '@/lib/useDebouncedValue';
-import { MUSCLE_GROUPS, muscleGroupLabel } from '@/features/exercises/muscleGroups';
+import { MUSCLE_GROUPS, muscleGroupLabelKey, getMuscleGroupBySearchTerm } from '@/features/exercises/muscleGroups';
 import {
   useExercises,
   useCreateExercise,
@@ -40,7 +40,15 @@ export function ExercisesPage() {
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
 
-  const { data, isLoading, isError } = useExercises({ search: debouncedSearch, muscles });
+  // If the search term is a known muscle group name (IT or EN), convert it to a
+  // muscle group filter instead of a name search for a better UX.
+  const matchedMuscle = getMuscleGroupBySearchTerm(debouncedSearch);
+  const effectiveMuscles = matchedMuscle
+    ? [...new Set([...muscles, matchedMuscle])]
+    : muscles;
+  const effectiveSearch = matchedMuscle ? '' : debouncedSearch;
+
+  const { data, isLoading, isError } = useExercises({ search: effectiveSearch, muscles: effectiveMuscles });
   const createMut = useCreateExercise();
   const updateMut = useUpdateExercise();
   const deleteMut = useDeleteExercise();
@@ -113,7 +121,7 @@ export function ExercisesPage() {
     <>
       <AppShell>
         {/* Title - scrollable, goes away when you scroll */}
-        <div className="mb-4 border-b border-bg-2 pb-4">
+        <div className="relative z-[20] mb-4 border-b border-bg-2 pb-4">
           <h1 className="text-xl font-extrabold text-slate-100">{t('exercises.title')}</h1>
           {data && <p className="mt-0.5 text-xs text-slate-400">{data.length} {t('exercises.exerciseCountSubtitle')}</p>}
         </div>
@@ -121,25 +129,26 @@ export function ExercisesPage() {
         {/* Search - Liquid glass + sticky (stays on top) */}
         <div
           ref={searchRef}
-          className="sticky top-0 z-30 mx-auto flex items-center gap-2 rounded-xl backdrop-blur transition-all duration-300"
+          className="sticky top-3 z-30 mx-auto flex items-center gap-2 overflow-hidden rounded-xl"
           style={{
             width: isSticky && !isFocused ? '90%' : '100%',
-            maxWidth: isSticky && !isFocused ? '320px' : 'none',
+            maxWidth: isSticky && !isFocused ? '320px' : '100%',
             marginBottom: isSticky && !isFocused ? '0.5rem' : '0.75rem',
             marginTop: isSticky && !isFocused ? '0.5rem' : '0',
             paddingLeft: '0.875rem',
             paddingRight: '0.875rem',
             paddingTop: isSticky && !isFocused ? '0.5rem' : '0.625rem',
             paddingBottom: isSticky && !isFocused ? '0.5rem' : '0.625rem',
-            height: isSticky && !isFocused ? '2.25rem' : 'auto',
+            height: isSticky && !isFocused ? '2.25rem' : '2.75rem',
             background: 'rgba(255, 255, 255, 0.05)',
             backdropFilter: 'blur(32px) saturate(200%)',
             WebkitBackdropFilter: 'blur(32px) saturate(200%)',
             border: '1px solid rgba(255, 255, 255, 0.12)',
             boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.1)',
+            transition: 'all 450ms cubic-bezier(0.25, 0.46, 0.45, 0.94)',
           }}
         >
-          <Search size={isSticky && !isFocused ? 16 : 18} className="text-slate-500 flex-shrink-0 transition-all" />
+          <Search size={isSticky && !isFocused ? 16 : 18} className="text-slate-500 flex-shrink-0" style={{ transition: 'all 450ms cubic-bezier(0.25, 0.46, 0.45, 0.94)' }} />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -150,29 +159,23 @@ export function ExercisesPage() {
           />
         </div>
 
-        {/* Gradient fade in - content fades in below search bar */}
-        <div
-          className="h-3 pointer-events-none"
-          style={{
-            background: 'linear-gradient(to bottom, rgba(6,11,26,0.8), transparent)',
-          }}
-        />
 
-        {/* Muscle filter chips */}
-        <div className="mb-4 flex flex-wrap gap-2">
+
+        {/* Muscle filter chips — equal-width grid, text centred, each chip uses its group colour */}
+        <div className="mb-4 grid grid-cols-4 gap-2">
           {MUSCLE_GROUPS.map((g) => {
             const active = muscles.includes(g.value);
             return (
               <button
                 key={g.value}
                 onClick={() => toggleMuscle(g.value)}
-                className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
+                className={`rounded-full py-1.5 text-center text-xs font-semibold transition ${
                   active
-                    ? 'bg-blueGlow text-white'
+                    ? g.activeClass
                     : 'border border-bg-2 bg-bg-2 text-slate-300 hover:bg-bg-3'
                 }`}
               >
-                {g.label}
+                {t(g.labelKey)}
               </button>
             );
           })}
@@ -300,7 +303,7 @@ function SwipeableExerciseItem({
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-semibold text-slate-100">{ex.name}</p>
             <p className="mt-0.5 text-xs text-slate-400">
-              {muscleGroupLabel(ex.muscle_group)} ·{' '}
+              {t(muscleGroupLabelKey(ex.muscle_group))} ·{' '}
               {isCustom ? (
                 <span className="text-amber-400">{t('exercises.custom')}</span>
               ) : (

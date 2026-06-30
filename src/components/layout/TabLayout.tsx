@@ -16,13 +16,23 @@ export function TabLayout() {
         <Outlet />
       </div>
 
-      {/* Fake layer for transparency effect - covers content before bottom nav */}
+      {/* iOS-style top fade — fades scrolling content below sticky elements */}
       <div
-        className="pointer-events-none fixed inset-x-0 z-20 mx-auto w-full max-w-md"
+        className="pointer-events-none fixed inset-x-0 z-10"
         style={{
-          bottom: '5rem',
+          top: 0,
           height: '5rem',
-          background: 'linear-gradient(to bottom, rgba(6, 11, 26, 0), rgba(6, 11, 26, 1))',
+          background: 'linear-gradient(to bottom, #060b1a 0%, transparent 100%)',
+        }}
+      />
+
+      {/* iOS-style bottom fade — fades content above the BottomNav */}
+      <div
+        className="pointer-events-none fixed inset-x-0 z-30"
+        style={{
+          bottom: 0,
+          height: '9rem',
+          background: 'linear-gradient(to top, #060b1a 0%, transparent 100%)',
         }}
       />
 

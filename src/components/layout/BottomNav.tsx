@@ -23,8 +23,8 @@ export function BottomNav() {
   return (
     /* Outer container: sits in the safe area, fills width */
     <div
-      className="fixed inset-x-0 bottom-0 z-40 flex justify-center px-4"
-      style={{ paddingBottom: 'max(2rem, env(safe-area-inset-bottom))' }}
+      className="fixed inset-x-0 bottom-0 z-40 mx-auto flex max-w-md justify-center px-4"
+      style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
     >
       {/*
         Liquid-glass pill — iOS 26 style:
@@ -34,7 +34,7 @@ export function BottomNav() {
         - Diffuse shadow to "lift" the pill off the page
       */}
       <nav
-        className="flex w-full max-w-sm items-center justify-around rounded-[2rem] px-2 py-2 mb-2"
+        className="flex w-full items-center justify-around rounded-[2rem] px-2 py-2 mb-2"
         style={{
           background: 'rgba(255, 255, 255, 0.06)',
           backdropFilter: 'blur(36px) saturate(200%)',

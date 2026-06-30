@@ -19,13 +19,28 @@ export interface Exercise {
   id: string;
   name: string;
   description: string | null;
+  description_it: string | null;
   muscle_group: MuscleGroup | null;
   source: ExerciseSource;
+  is_bodyweight: boolean;
+  equipment: string | null;
   external_id: string | null;
   owner_id: string | null;
   created_at: string;
   updated_at: string;
 }
+
+export interface UserExerciseCustomization {
+  exercise_id: string;
+  user_id: string;
+  description: string | null;
+  description_it: string | null;
+  is_bodyweight: boolean | null;
+  equipment: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 
 export interface WorkoutPlan {
   id: string;

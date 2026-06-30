@@ -66,10 +66,16 @@ export function PlansPage() {
 
   return (
     <>
-      <AppShell
-        title={t('plans.myPlans')}
-        subtitle={data ? `${data.length} ${data.length === 1 ? t('plans.exercise') : t('plans.exercises_plural')}` : undefined}
-      >
+      <AppShell>
+        {/* Title - scrollable, same style as all other tab pages */}
+        <div className="relative z-[20] mb-4 border-b border-bg-2 pb-4">
+          <h1 className="text-xl font-extrabold text-slate-100">{t('plans.myPlans')}</h1>
+          {data && (
+            <p className="mt-0.5 text-xs text-slate-400">
+              {data.length} {data.length === 1 ? t('plans.planCountSingular') : t('plans.planCountPlural')}
+            </p>
+          )}
+        </div>
         {isLoading && <Spinner />}
         {isError && (
           <p className="rounded-lg bg-dangerRed/10 px-3 py-2 text-sm text-dangerRed">
@@ -91,7 +97,7 @@ export function PlansPage() {
           const others = data.filter((p) => !p.is_favorite);
 
           return (
-            <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-6 pb-24">
               {favorites.length > 0 && (
                 <div className="flex flex-col gap-3">
                   <h2 className="px-1 text-xs font-semibold uppercase tracking-widest text-amber-400">

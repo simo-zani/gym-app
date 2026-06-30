@@ -21,7 +21,10 @@ export function ProfilePage() {
   };
 
   return (
-    <AppShell title={t('profile.title')}>
+    <AppShell>
+      <div className="relative z-[20] mb-4 border-b border-bg-2 pb-4">
+        <h1 className="text-xl font-extrabold text-slate-100">{t('profile.title')}</h1>
+      </div>
       <div className="flex flex-col gap-4">
         <div className="rounded-2xl border border-bg-2 bg-bg-1 p-5">
           <p className="text-sm text-slate-400">{t('profile.account')}</p>

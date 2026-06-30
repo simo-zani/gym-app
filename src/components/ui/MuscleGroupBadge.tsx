@@ -19,7 +19,7 @@ export function MuscleGroupBadge({ group }: { group: MuscleGroup | null | undefi
 
   return (
     <span
-      className={`rounded-md px-2 py-1 text-[10px] font-bold uppercase tracking-wide ${muscleGroupBadgeClass(group)}`}
+      className={`inline-block min-w-[4.5rem] rounded-md px-2 py-1 text-center text-[10px] font-bold uppercase tracking-wide ${muscleGroupBadgeClass(group)}`}
     >
       {t(key)}
     </span>

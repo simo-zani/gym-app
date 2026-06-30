@@ -5,7 +5,7 @@ import { Modal } from '@/components/ui/Modal';
 import { Spinner } from '@/components/ui/Spinner';
 import { useDebouncedValue } from '@/lib/useDebouncedValue';
 import { useExercises } from '@/features/exercises/hooks';
-import { muscleGroupLabel } from '@/features/exercises/muscleGroups';
+import { muscleGroupLabelKey } from '@/features/exercises/muscleGroups';
 import type { Exercise } from '@/types/db';
 
 interface AddExerciseModalProps {
@@ -48,7 +48,7 @@ export function AddExerciseModal({ open, onClose, onSelect }: AddExerciseModalPr
                 >
                   <span className="truncate text-sm font-semibold text-slate-100">{ex.name}</span>
                   <span className="text-xs text-slate-400">
-                    {muscleGroupLabel(ex.muscle_group)} ·{' '}
+                    {t(muscleGroupLabelKey(ex.muscle_group))} ·{' '}
                     {ex.owner_id !== null ? t('exercises.custom') : t('exercises.wger')}
                   </span>
                 </button>

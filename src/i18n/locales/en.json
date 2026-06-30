@@ -39,6 +39,8 @@
     "exercises": "Exercises",
     "exercise": "exercise",
     "exercises_plural": "exercises",
+    "planCountSingular": "workout plan",
+    "planCountPlural": "workout plans",
     "noExercises": "No Exercises",
     "noExercisesInPlan": "No exercises in this plan.",
     "addExercise": "Add Exercise",
@@ -109,7 +111,21 @@
       "core": "Core",
       "cardio": "Cardio",
       "other": "Other"
-    }
+    },
+    "equipment": "Equipment",
+    "equipmentTypes": {
+      "dumbbell": "Dumbbells",
+      "barbell": "Barbell",
+      "kettlebell": "Kettlebell",
+      "cable": "Cables",
+      "machine": "Machine",
+      "none": "None (Bodyweight)"
+    },
+    "isBodyweight": "Bodyweight exercise",
+    "descriptionEn": "Description (English)",
+    "descriptionIt": "Description (Italian)",
+    "notTranslated": "Not translated (shown in English)",
+    "targetArea": "Target Area"
   },
   "exerciseConfig": {
     "title": "Configure",

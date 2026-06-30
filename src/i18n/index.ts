@@ -3,6 +3,8 @@ import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 import itTranslations from './locales/it.json';
 import enTranslations from './locales/en.json';
+// Force reload JSON updates
+
 
 i18n
   .use(LanguageDetector)

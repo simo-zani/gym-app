@@ -31,9 +31,9 @@ export function Modal({ open, onClose, title, children }: ModalProps) {
         onClick={onClose}
         aria-hidden
       />
-      <div className="relative z-10 w-full max-w-sm rounded-2xl border border-bg-3 bg-bg-1 p-5 shadow-2xl animate-modal-in">
+      <div className="relative z-10 w-full max-w-sm rounded-2xl border border-bg-3 bg-bg-1 p-5 shadow-2xl animate-modal-in flex flex-col max-h-[82vh]">
         {title && (
-          <div className="mb-4 flex items-center justify-between">
+          <div className="mb-4 flex items-center justify-between flex-shrink-0">
             <h2 className="text-lg font-bold text-slate-100">{title}</h2>
             <button
               onClick={onClose}
@@ -44,7 +44,9 @@ export function Modal({ open, onClose, title, children }: ModalProps) {
             </button>
           </div>
         )}
-        {children}
+        <div className="flex-1 overflow-y-auto pr-1 -mr-2">
+          {children}
+        </div>
       </div>
     </div>
   );

@@ -39,6 +39,8 @@
     "exercises": "Esercizi",
     "exercise": "esercizio",
     "exercises_plural": "esercizi",
+    "planCountSingular": "piano di allenamento",
+    "planCountPlural": "piani di allenamento",
     "noExercises": "Nessun esercizio",
     "noExercisesInPlan": "Nessun esercizio nella scheda.",
     "addExercise": "Aggiungi esercizio",
@@ -109,7 +111,21 @@
       "core": "Core",
       "cardio": "Cardio",
       "other": "Altro"
-    }
+    },
+    "equipment": "Attrezzatura",
+    "equipmentTypes": {
+      "dumbbell": "Manubri",
+      "barbell": "Bilanciere",
+      "kettlebell": "Kettlebell",
+      "cable": "Cavi",
+      "machine": "Macchinario",
+      "none": "Nessuno (Corpo Libero)"
+    },
+    "isBodyweight": "Esercizio a corpo libero",
+    "descriptionEn": "Descrizione (Inglese)",
+    "descriptionIt": "Descrizione (Italiano)",
+    "notTranslated": "Non tradotto (mostrato in inglese)",
+    "targetArea": "Area Target"
   },
   "exerciseConfig": {
     "title": "Configura",
