@@ -3,18 +3,16 @@ import { BottomNav } from './BottomNav';
 
 /**
  * Layout for the four main tabs (schede, esercizi, storico, profilo).
- * Centers the app column and reserves bottom space for the fixed nav.
+ * Fixed viewport: scrollable content + fixed bottom nav (iOS style).
  */
 export function TabLayout() {
   return (
-    <div className="mx-auto min-h-full w-full max-w-md bg-bg-0 flex flex-col">
-      {/* Padding bottom clears: pill height (~72px) + padding (~20px) + safe area */}
-      <div
-        className="flex-1"
-        style={{ paddingBottom: 'calc(6rem + env(safe-area-inset-bottom))' }}
-      >
+    <div className="mx-auto h-screen w-full max-w-md flex flex-col bg-bg-0">
+      {/* Scrollable content area */}
+      <div className="flex-1 overflow-y-auto">
         <Outlet />
       </div>
+      {/* Fixed bottom nav */}
       <BottomNav />
     </div>
   );

@@ -22,24 +22,24 @@ export function BottomNav() {
     /* Outer container: sits in the safe area, fills width */
     <div
       className="fixed inset-x-0 bottom-0 z-40 flex justify-center px-4"
-      style={{ paddingBottom: 'max(1.25rem, env(safe-area-inset-bottom))' }}
+      style={{ paddingBottom: 'max(2rem, env(safe-area-inset-bottom))' }}
     >
       {/*
         Liquid-glass pill — iOS 26 style:
-        - Heavy backdrop blur  
-        - Very subtle white tint (~4 %)
+        - Heavy backdrop blur
+        - Stronger white tint (~6 %)
         - Two-layer border: top bright glint + outer muted ring
         - Diffuse shadow to "lift" the pill off the page
       */}
       <nav
-        className="flex w-full max-w-sm items-center justify-around rounded-[2rem] px-2 py-2"
+        className="flex w-full max-w-sm items-center justify-around rounded-[2rem] px-2 py-2 mb-2"
         style={{
-          background: 'rgba(255, 255, 255, 0.04)',
-          backdropFilter: 'blur(28px) saturate(180%)',
-          WebkitBackdropFilter: 'blur(28px) saturate(180%)',
-          border: '1px solid rgba(255, 255, 255, 0.10)',
+          background: 'rgba(255, 255, 255, 0.06)',
+          backdropFilter: 'blur(36px) saturate(200%)',
+          WebkitBackdropFilter: 'blur(36px) saturate(200%)',
+          border: '1px solid rgba(255, 255, 255, 0.15)',
           boxShadow:
-            'inset 0 1px 0 rgba(255,255,255,0.12), ' +
+            'inset 0 1px 0 rgba(255,255,255,0.15), ' +
             '0 4px 6px rgba(0,0,0,0.2), ' +
             '0 12px 40px rgba(0,0,0,0.35)',
         }}
