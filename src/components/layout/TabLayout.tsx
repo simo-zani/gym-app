@@ -16,6 +16,16 @@ export function TabLayout() {
         <Outlet />
       </div>
 
+      {/* Fake layer for transparency effect - covers content before bottom nav */}
+      <div
+        className="pointer-events-none fixed inset-x-0 z-20 mx-auto w-full max-w-md"
+        style={{
+          bottom: '5rem',
+          height: '5rem',
+          background: 'linear-gradient(to bottom, rgba(6, 11, 26, 0), rgba(6, 11, 26, 1))',
+        }}
+      />
+
       {/* Fixed bottom nav */}
       <BottomNav />
     </div>

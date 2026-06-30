@@ -121,14 +121,17 @@ export function ExercisesPage() {
         {/* Search - Liquid glass + sticky (stays on top) */}
         <div
           ref={searchRef}
-          className="sticky top-0 z-30 flex items-center gap-2 rounded-xl backdrop-blur transition-all duration-300"
+          className="sticky top-0 z-30 mx-auto flex items-center gap-2 rounded-xl backdrop-blur transition-all duration-300"
           style={{
+            width: isSticky && !isFocused ? '90%' : '100%',
+            maxWidth: isSticky && !isFocused ? '320px' : 'none',
             marginBottom: isSticky && !isFocused ? '0.5rem' : '0.75rem',
             marginTop: isSticky && !isFocused ? '0.5rem' : '0',
             paddingLeft: '0.875rem',
             paddingRight: '0.875rem',
             paddingTop: isSticky && !isFocused ? '0.5rem' : '0.625rem',
             paddingBottom: isSticky && !isFocused ? '0.5rem' : '0.625rem',
+            height: isSticky && !isFocused ? '2.25rem' : 'auto',
             background: 'rgba(255, 255, 255, 0.05)',
             backdropFilter: 'blur(32px) saturate(200%)',
             WebkitBackdropFilter: 'blur(32px) saturate(200%)',
@@ -195,7 +198,7 @@ export function ExercisesPage() {
         )}
 
         {data && data.length > 0 && (
-          <ul className="flex flex-col gap-2">
+          <ul className="flex flex-col gap-2 pb-24">
             {data.map((ex) => (
               <li key={ex.id}>
                 <SwipeableExerciseItem
@@ -206,18 +209,6 @@ export function ExercisesPage() {
               </li>
             ))}
           </ul>
-        )}
-
-        {/* Gradient fade out - content fades out before bottom nav */}
-        {data && data.length > 0 && (
-          <div
-            className="pointer-events-none"
-            style={{
-              background: 'linear-gradient(to bottom, rgba(6,11,26,0), rgba(6,11,26,1))',
-              height: '6rem',
-              marginTop: '0.5rem',
-            }}
-          />
         )}
       </AppShell>
 
