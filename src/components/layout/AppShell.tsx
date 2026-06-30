@@ -28,29 +28,38 @@ export function AppShell({
   return (
     <div className="flex min-h-full flex-col">
       {(title || onBack || action) && (
-        <header
-          className="sticky top-0 z-20 flex items-center gap-3 border-b border-bg-2 bg-bg-0/90 px-4 pb-4 backdrop-blur"
-          style={{ paddingTop: 'calc(1rem + env(safe-area-inset-top))' }}
-        >
-          {onBack && (
-            <button
-              onClick={onBack}
-              aria-label="Indietro"
-              className="-ml-2 rounded-lg p-2 text-slate-300 transition hover:bg-bg-2 hover:text-slate-100"
-            >
-              <ChevronLeft size={22} />
-            </button>
-          )}
-          <div className="min-w-0 flex-1">
-            {typeof title === 'string' ? (
-              <h1 className="truncate text-xl font-extrabold text-slate-100">{title}</h1>
-            ) : (
-              title
+        <>
+          <header
+            className="sticky top-0 z-20 flex items-center gap-3 border-b border-bg-2 bg-bg-0/90 px-4 pb-4 backdrop-blur"
+            style={{ paddingTop: 'calc(1rem + env(safe-area-inset-top))' }}
+          >
+            {onBack && (
+              <button
+                onClick={onBack}
+                aria-label="Indietro"
+                className="-ml-2 rounded-lg p-2 text-slate-300 transition hover:bg-bg-2 hover:text-slate-100"
+              >
+                <ChevronLeft size={22} />
+              </button>
             )}
-            {subtitle && <p className="mt-0.5 truncate text-xs text-slate-400">{subtitle}</p>}
-          </div>
-          {action}
-        </header>
+            <div className="min-w-0 flex-1">
+              {typeof title === 'string' ? (
+                <h1 className="truncate text-xl font-extrabold text-slate-100">{title}</h1>
+              ) : (
+                title
+              )}
+              {subtitle && <p className="mt-0.5 truncate text-xs text-slate-400">{subtitle}</p>}
+            </div>
+            {action}
+          </header>
+          {/* Gradient fade below header when content scrolls under */}
+          <div
+            className="sticky top-16 pointer-events-none h-3 z-10"
+            style={{
+              background: 'linear-gradient(to bottom, rgba(0,0,0,0.2), transparent)',
+            }}
+          />
+        </>
       )}
       <main className={`flex-1 px-4 py-5 ${contentClassName}`}>{children}</main>
       {footer && (

@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import { Dumbbell, ListChecks, BarChart3, User, type LucideIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useScroll } from '@/lib/ScrollContext';
 
 interface NavTab {
   to: string;
@@ -17,6 +18,7 @@ const TABS: NavTab[] = [
 
 export function BottomNav() {
   const { t } = useTranslation();
+  const { scrollToTop } = useScroll();
 
   return (
     /* Outer container: sits in the safe area, fills width */
@@ -49,6 +51,13 @@ export function BottomNav() {
             key={to}
             to={to}
             end={to === '/'}
+            onClick={(e) => {
+              const target = e.currentTarget;
+              if (target.getAttribute('aria-current') === 'page') {
+                e.preventDefault();
+                scrollToTop();
+              }
+            }}
             className={({ isActive }) =>
               `flex flex-1 flex-col items-center gap-1 rounded-2xl px-1 py-2 text-[10px] font-semibold transition-all duration-300 ${
                 isActive

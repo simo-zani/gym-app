@@ -96,9 +96,22 @@ export function ExercisesPage() {
         title={t('exercises.title')}
         subtitle={data ? `${data.length} ${t('exercises.exerciseCountSubtitle')}` : undefined}
       >
-        {/* Search */}
-        <div className="mb-3 flex items-center gap-2 rounded-xl border border-bg-2 bg-bg-1 px-3.5 py-2.5">
-          <Search size={18} className="text-slate-500" />
+        {/* Search - Liquid glass + sticky */}
+        <div
+          className="sticky top-0 z-10 -mx-4 mb-3 flex items-center gap-2 rounded-xl px-3.5 py-2.5 backdrop-blur"
+          style={{
+            background: 'rgba(255, 255, 255, 0.05)',
+            backdropFilter: 'blur(32px) saturate(200%)',
+            WebkitBackdropFilter: 'blur(32px) saturate(200%)',
+            border: '1px solid rgba(255, 255, 255, 0.12)',
+            boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.1)',
+            marginLeft: '-1rem',
+            marginRight: '-1rem',
+            paddingLeft: 'calc(0.875rem + 1rem)',
+            paddingRight: 'calc(0.875rem + 1rem)',
+          }}
+        >
+          <Search size={18} className="text-slate-500 flex-shrink-0" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}

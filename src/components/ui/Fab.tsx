@@ -12,7 +12,7 @@ interface FabProps {
  */
 export function Fab({ onClick, label }: FabProps) {
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-0 z-30 mx-auto flex max-w-md justify-end px-4 pb-24">
+    <div className="pointer-events-none fixed inset-x-0 bottom-0 z-30 mx-auto flex max-w-md justify-end px-4 pb-32">
       <button
         onClick={onClick}
         aria-label={label}
