@@ -92,7 +92,12 @@ export function RestScreen({ onExitRequest }: Props) {
 
   const radius = 105;
   const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference * (1 - progress);
+  // `progress` is the remaining fraction; offset = C * progress makes the arc
+  // fill up clockwise as time elapses (empty at start → full at the end).
+  const strokeDashoffset = circumference * progress;
+
+  // Ambient glow colour follows the ring (amber while paused, blue otherwise).
+  const glowRgb = isPaused ? '217, 119, 6' : '96, 165, 250';
 
   // Per-exercise completion map (keyed by planExerciseId for uniqueness)
   const setsByExercise: Record<string, number> = {};
@@ -140,7 +145,7 @@ export function RestScreen({ onExitRequest }: Props) {
       {/* ── Header ─────────────────────────────────────────────── */}
       <div className="flex items-center justify-between px-5 pt-5 pb-3">
         <div className="flex flex-col">
-          <span className="text-xs font-semibold uppercase tracking-widest text-blueSoft/70">
+          <span className="text-xs font-semibold uppercase tracking-widest text-blueSoft">
             {t('workout.rest')}
           </span>
           <h2 className="mt-0.5 text-lg font-bold text-slate-100">
@@ -202,10 +207,16 @@ export function RestScreen({ onExitRequest }: Props) {
           </button>
 
           <div className="relative flex items-center justify-center">
+            {/* Ambient phase glow */}
+            <div
+              aria-hidden
+              className="phase-glow pointer-events-none absolute left-1/2 top-1/2 h-[300px] w-[300px] -translate-x-1/2 -translate-y-1/2 rounded-full blur-2xl transition-colors duration-500"
+              style={{ background: `radial-gradient(circle, rgba(${glowRgb}, 0.32) 0%, rgba(${glowRgb}, 0) 70%)` }}
+            />
             <svg
               width="240"
               height="240"
-              className={`-rotate-90 transition-all duration-300 ${isPaused ? 'animate-pulse' : ''}`}
+              className={`relative z-10 -rotate-90 transition-all duration-300 ${isPaused ? 'animate-pulse' : ''}`}
             >
               <circle cx="120" cy="120" r={radius} fill="none" stroke={isPaused ? 'rgba(217,119,6,0.12)' : 'rgba(96,165,250,0.12)'} strokeWidth="14" />
               <circle
@@ -214,7 +225,7 @@ export function RestScreen({ onExitRequest }: Props) {
                 style={{ transition: 'stroke-dashoffset 0.1s linear' }}
               />
             </svg>
-            <div className="absolute flex items-center justify-center">
+            <div className="absolute z-10 flex items-center justify-center">
               <span
                 className={`text-6xl font-black tabular-nums transition-colors duration-300 ${
                   isPaused ? 'animate-pulse text-amber-500' : 'text-blueSoft'

@@ -96,6 +96,15 @@ export function ExerciseProgressBar({
 
   const totalWeight = segments.reduce((s, seg) => s + seg.weight, 0);
 
+  // Each phase keeps its own colour, used for both the completed (done) and the
+  // in-progress (active) fill — matching the colour of that phase's timer ring.
+  const phaseFill: Record<Seg['kind'], string> = {
+    warmup: 'bg-amber-500',
+    set: 'bg-successGreen',
+    rest: 'bg-blueSoft',
+    cooldown: 'bg-purple-500',
+  };
+
   return (
     <div className="flex h-2 w-full gap-0.5 overflow-hidden rounded-full bg-bg-0">
       {segments.map((seg) => {
@@ -108,20 +117,11 @@ export function ExerciseProgressBar({
 
         if (state === 'done') {
           fillWidth = '100%';
-          fillColor = seg.kind === 'warmup' || seg.kind === 'cooldown'
-            ? 'bg-successGreen/70'
-            : 'bg-successGreen';
+          fillColor = phaseFill[seg.kind];
         } else if (state === 'active') {
           // Fill based on current progress — no animate-pulse to avoid flicker
           fillWidth = `${Math.min(100, Math.max(0, currentProgress * 100))}%`;
-
-          if (seg.kind === 'rest') {
-            fillColor = 'bg-blueSoft';
-          } else if (seg.kind === 'cooldown' || seg.kind === 'warmup') {
-            fillColor = 'bg-successGreen/80';
-          } else {
-            fillColor = 'bg-successGreen';
-          }
+          fillColor = phaseFill[seg.kind];
         }
 
         let rounded = '';

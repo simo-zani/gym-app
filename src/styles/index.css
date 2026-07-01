@@ -74,3 +74,29 @@
   animation: sheet-slide-up 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+/* Ambient phase glow — a soft, slow "breathing" halo behind the timer rings.
+   Kept subtle so it feels premium rather than distracting. */
+@keyframes phase-glow-breathe {
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: translate(-50%, -50%) scale(0.95);
+  }
+  50% {
+    opacity: 0.85;
+    transform: translate(-50%, -50%) scale(1.05);
+  }
+}
+
+.phase-glow {
+  animation: phase-glow-breathe 4.5s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .phase-glow {
+    animation: none;
+    opacity: 0.7;
+  }
+}
+

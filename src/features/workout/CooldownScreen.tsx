@@ -6,7 +6,7 @@ import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { SkipForward } from 'lucide-react';
 import { useWorkoutStore } from './useWorkoutStore';
-import { useCountdown } from './useCountdown';
+import { useCountdown, formatTime } from './useCountdown';
 import { playRestEnd, vibrateRestEnd } from './audio';
 import { Button } from '@/components/ui/Button';
 import { ExerciseProgressBar } from './ExerciseProgressBar';
@@ -51,14 +51,16 @@ export function CooldownScreen({ onExitRequest }: Props) {
 
   const radius = 105;
   const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference * (1 - progress);
+  // `progress` is the remaining fraction; offset = C * progress makes the arc
+  // fill up clockwise as time elapses (empty at start → full at the end).
+  const strokeDashoffset = circumference * progress;
 
   return (
     <div className="flex min-h-screen flex-col" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
       {/* ── Header ─────────────────────────────────────────────── */}
       <div className="flex items-center justify-between px-5 pt-5 pb-3">
         <div className="flex flex-col">
-          <span className="text-xs font-semibold uppercase tracking-widest text-blueSoft/70">
+          <span className="text-xs font-semibold uppercase tracking-widest text-purple-500">
             {t('workout.cooldown')}
           </span>
           <h2 className="mt-0.5 text-lg font-bold text-slate-300">
@@ -100,7 +102,13 @@ export function CooldownScreen({ onExitRequest }: Props) {
         <div className="flex-[0.8]" />
         <div className="flex items-center justify-center">
           <div className="relative flex items-center justify-center">
-          <svg width="240" height="240" className="-rotate-90">
+          {/* Ambient phase glow */}
+          <div
+            aria-hidden
+            className="phase-glow pointer-events-none absolute left-1/2 top-1/2 h-[300px] w-[300px] -translate-x-1/2 -translate-y-1/2 rounded-full blur-2xl"
+            style={{ background: 'radial-gradient(circle, rgba(168,85,247,0.32) 0%, rgba(168,85,247,0) 70%)' }}
+          />
+          <svg width="240" height="240" className="relative z-10 -rotate-90">
             <circle
               cx="120"
               cy="120"
@@ -122,9 +130,12 @@ export function CooldownScreen({ onExitRequest }: Props) {
               style={{ transition: 'stroke-dashoffset 0.1s linear' }}
             />
           </svg>
-          <div className="absolute flex flex-col items-center justify-center text-center">
-            <span className="mt-1 text-[11px] font-semibold tabular-nums text-slate-500">
-              {formatElapsed(exerciseElapsed)}
+          <div className="absolute z-10 flex items-center justify-center">
+            <span
+              className="text-6xl font-black tabular-nums text-purple-500"
+              style={{ fontVariantNumeric: 'tabular-nums' }}
+            >
+              {formatTime(secondsLeft)}
             </span>
           </div>
         </div>

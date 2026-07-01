@@ -38,14 +38,16 @@ export function WarmupScreen({ onExitRequest }: Props) {
 
   const radius = 105;
   const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference * (1 - progress);
+  // `progress` is the remaining fraction; offset = C * progress makes the arc
+  // fill up clockwise as time elapses (empty at start → full at the end).
+  const strokeDashoffset = circumference * progress;
 
   return (
     <div className="flex min-h-screen flex-col" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
       {/* ── Header ─────────────────────────────────────────────── */}
       <div className="flex items-center justify-between px-5 pt-5 pb-3">
         <div className="flex flex-col">
-          <span className="text-xs font-semibold uppercase tracking-widest text-successGreen">
+          <span className="text-xs font-semibold uppercase tracking-widest text-amber-500">
             {t('workout.preparation')}
           </span>
           <h1 className="mt-0.5 text-xl font-extrabold leading-tight text-slate-100">
@@ -73,21 +75,18 @@ export function WarmupScreen({ onExitRequest }: Props) {
         />
       </div>
 
-      {/* ── Set pill ───────────────────────────────────────────── */}
-      <div className="px-5 pb-4">
-        <div className="inline-flex items-center gap-1.5 rounded-full bg-successGreen/15 px-3 py-1">
-          <span className="text-sm font-bold text-successGreen">
-            {t('workout.timedExercise')}
-          </span>
-        </div>
-      </div>
-
       {/* ── Circular Warmup countdown ──────────────────────────── */}
       <div className="flex flex-1 flex-col">
         <div className="flex-[0.8]" />
         <div className="flex items-center justify-center">
           <div className="relative flex items-center justify-center">
-          <svg width="240" height="240" className="-rotate-90">
+          {/* Ambient phase glow */}
+          <div
+            aria-hidden
+            className="phase-glow pointer-events-none absolute left-1/2 top-1/2 h-[300px] w-[300px] -translate-x-1/2 -translate-y-1/2 rounded-full blur-2xl"
+            style={{ background: 'radial-gradient(circle, rgba(245,158,11,0.32) 0%, rgba(245,158,11,0) 70%)' }}
+          />
+          <svg width="240" height="240" className="relative z-10 -rotate-90">
             <circle
               cx="120"
               cy="120"
@@ -109,7 +108,7 @@ export function WarmupScreen({ onExitRequest }: Props) {
               style={{ transition: 'stroke-dashoffset 0.1s linear' }}
             />
           </svg>
-          <div className="absolute flex flex-col items-center justify-center text-center">
+          <div className="absolute z-10 flex flex-col items-center justify-center text-center">
             <span className="text-xs font-semibold uppercase tracking-widest text-amber-500/60 mb-1">
               {t('workout.getReady')}
             </span>

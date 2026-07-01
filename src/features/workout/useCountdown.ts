@@ -17,11 +17,31 @@ export function useCountdown(
   isPaused?: boolean,
   pausedSecondsLeft?: number,
 ): number {
-  const [secondsLeft, setSecondsLeft] = useState<number>(0);
+  // Compute the true remaining seconds for the current target right now.
+  const computeSecondsLeft = () => {
+    if (!active || targetEpochMs === null) return 0;
+    return Math.ceil(Math.max(0, targetEpochMs - Date.now()) / 1000);
+  };
+
+  const [secondsLeft, setSecondsLeft] = useState<number>(computeSecondsLeft);
   const onEndRef = useRef(onEnd);
   onEndRef.current = onEnd;
   const firedRef = useRef(false);
   const lastTickRef = useRef<number>(-1);
+
+  // Synchronously correct `secondsLeft` during render whenever the timer target
+  // (or active flag) changes — before the browser paints. Without this, the very
+  // first render after a phase change still holds the previous value (or the
+  // initial 0), which makes progress bars/rings momentarily jump to 100% and then
+  // animate back down. Adjusting here keeps every phase starting cleanly from 0.
+  const prevTargetRef = useRef<number | null>(targetEpochMs);
+  const prevActiveRef = useRef<boolean>(active);
+  if (!isPaused && (prevTargetRef.current !== targetEpochMs || prevActiveRef.current !== active)) {
+    prevTargetRef.current = targetEpochMs;
+    prevActiveRef.current = active;
+    const next = computeSecondsLeft();
+    if (next !== secondsLeft) setSecondsLeft(next);
+  }
 
   // If paused, immediately set the countdown to the paused value
   useEffect(() => {

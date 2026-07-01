@@ -60,15 +60,18 @@ export function SortableExerciseRow({ item, index, onEdit, onDelete }: SortableE
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
-      {/* Delete background (shows on swipe) */}
-      <div className="absolute inset-0 flex items-center justify-end bg-dangerRed pr-4">
-        <Trash2 size={16} className="text-white" />
-      </div>
+      {/* Delete background — only rendered while swiping, so its red fill can't
+          bleed through the rounded corners of the row at rest. */}
+      {swipeOffset < 0 && (
+        <div className="absolute inset-0 flex items-center justify-end bg-dangerRed pr-4">
+          <Trash2 size={16} className="text-white" />
+        </div>
+      )}
 
       {/* Main row */}
       <div
         ref={setNodeRef}
-        className="flex items-center gap-2.5 border border-bg-2 bg-bg-1 px-3 py-3"
+        className="flex items-center gap-2.5 rounded-xl border border-bg-2 bg-bg-1 px-3 py-3"
         style={{ transform: `translateX(${swipeOffset}px)` }}
       >
         <button
@@ -108,13 +111,6 @@ export function SortableExerciseRow({ item, index, onEdit, onDelete }: SortableE
           className="rounded-lg p-1.5 text-slate-400 transition hover:bg-bg-3 hover:text-slate-100"
         >
           <Pencil size={16} />
-        </button>
-        <button
-          onClick={() => onDelete(item)}
-          aria-label={t('common.remove')}
-          className="rounded-lg p-1.5 text-slate-400 transition hover:bg-bg-3 hover:text-dangerRed"
-        >
-          <Trash2 size={16} />
         </button>
       </div>
     </div>

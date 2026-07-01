@@ -429,7 +429,9 @@ export const useWorkoutStore = create<WorkoutStore>()(
         const { phase, exercises, currentExerciseIndex } = get();
         if (phase.kind !== 'timed_running') return;
         const ex = exercises[currentExerciseIndex];
-        set({ phase: { kind: 'exercising' } });
+        // Stay in `timed_running` (bar at 100%, timer at 00:00) while the set is
+        // saved. Switching to `exercising` here would briefly empty the progress
+        // bar before completeCurrentSet advances to the rest/cooldown phase.
         await get().completeCurrentSet({ durationSecondsDone: ex.durationSeconds ?? 0 });
       },
 
@@ -554,13 +556,25 @@ export const useWorkoutStore = create<WorkoutStore>()(
         const nextEx = exercises[nextExerciseIndex];
         if (!nextEx) return;
 
+        // Resolve the first set's editable target (pyramid can differ per set).
+        let nextEditReps = nextEx.reps ?? 0;
+        let nextEditWeight = nextEx.weightKg;
+        if (nextEx.mode === 'pyramid' && nextEx.pyramidConfig) {
+          const cfg = nextEx.pyramidConfig[0] ?? nextEx.pyramidConfig[nextEx.pyramidConfig.length - 1];
+          nextEditReps = cfg.mode === 'reps' ? (cfg.reps ?? 0) : 0;
+          nextEditWeight = cfg.weight_kg;
+        }
+
+        // Start the new exercise with its own preparation countdown. We advance
+        // to this exercise and reset the per-exercise timer + progress bar (the
+        // overall workout timer, startedAtMs, keeps running untouched).
         set({
-          phase: {
-            kind: 'resting',
-            restTargetEpochMs: Date.now() + nextEx.restSeconds * 1000,
-            nextExerciseIndex,
-            nextSetNumber: 1,
-          },
+          currentExerciseIndex: nextExerciseIndex,
+          currentSetNumber: 1,
+          currentExerciseStartedAtMs: Date.now(),
+          editReps: nextEditReps,
+          editWeight: nextEditWeight,
+          phase: { kind: 'warmup', targetEpochMs: Date.now() + 10_000 },
         });
       },
 
