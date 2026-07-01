@@ -30,6 +30,33 @@ export function useCountdown(
     }
   }, [isPaused, pausedSecondsLeft]);
 
+  // Immediately sync secondsLeft when targetEpochMs changes significantly
+  useEffect(() => {
+    if (!active || targetEpochMs === null || isPaused) return;
+
+    const ms = Math.max(0, targetEpochMs - Date.now());
+    const timeLeft = Math.ceil(ms / 1000);
+    setSecondsLeft(timeLeft);
+    firedRef.current = false;
+    lastTickRef.current = -1;
+  }, [targetEpochMs, active, isPaused]);
+
+  // Sync timer when app returns from background (screen unlock)
+  useEffect(() => {
+    if (!active || targetEpochMs === null || isPaused) return;
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        const ms = Math.max(0, targetEpochMs - Date.now());
+        const timeLeft = Math.ceil(ms / 1000);
+        setSecondsLeft(timeLeft);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [targetEpochMs, active, isPaused]);
+
   useEffect(() => {
     if (isPaused) return;
 

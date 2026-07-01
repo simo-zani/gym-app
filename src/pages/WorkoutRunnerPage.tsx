@@ -56,6 +56,26 @@ export function WorkoutRunnerPage() {
     };
   }, []);
 
+  // ── Block swipe-back navigation during active workout ──────────────────────
+  useEffect(() => {
+    const isWorkoutActive = phase.kind !== 'idle' && phase.kind !== 'starting';
+
+    if (!isWorkoutActive) return;
+
+    const handlePopState = () => {
+      // Re-push state to block the back navigation
+      window.history.pushState(null, '', window.location.pathname);
+    };
+
+    // Push state to prevent initial back navigation
+    window.history.pushState(null, '', window.location.pathname);
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [phase.kind]);
+
   // ── Auto-start ─────────────────────────────────────────────────────────────
   useEffect(() => {
     const data = planQuery.data;

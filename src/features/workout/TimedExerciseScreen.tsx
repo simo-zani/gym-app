@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Play, Square, Pause } from 'lucide-react';
+import { Play, SkipForward, Pause } from 'lucide-react';
 import { useWorkoutStore } from './useWorkoutStore';
 import { useCountdown, formatTime } from './useCountdown';
 import { playTimedEnd } from './audio';
@@ -62,7 +62,7 @@ export function TimedExerciseScreen({ onExitRequest }: Props) {
     ? Math.max(0, Math.min(1, displaySeconds / totalDuration))
     : 1;
 
-  const radius = 96;
+  const radius = 105;
   const circumference = 2 * Math.PI * radius; // 603.185
   const strokeDashoffset = circumference * (1 - progress);
 
@@ -77,7 +77,7 @@ export function TimedExerciseScreen({ onExitRequest }: Props) {
   }
 
   return (
-    <div className="flex min-h-full flex-col">
+    <div className="flex h-screen flex-col overflow-hidden" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
       {/* ── Header ─────────────────────────────────────────────── */}
       <div className="flex items-center justify-between px-5 pt-5 pb-3">
         <div className="flex flex-col">
@@ -109,15 +109,6 @@ export function TimedExerciseScreen({ onExitRequest }: Props) {
         />
       </div>
 
-      {/* ── Set pill ───────────────────────────────────────────── */}
-      <div className="px-5 pb-4">
-        <div className="inline-flex items-center gap-1.5 rounded-full bg-successGreen/15 px-3 py-1">
-          <span className="text-sm font-bold text-successGreen">
-            {t('workout.setOf', { current: currentSetNumber, total: ex.totalSets })}
-          </span>
-        </div>
-      </div>
-
       {/* ── Workout elapsed timers (always visible) ───────────── */}
       <div className="flex justify-center gap-6 px-5 pb-2">
         <div className="text-center">
@@ -130,56 +121,72 @@ export function TimedExerciseScreen({ onExitRequest }: Props) {
         </div>
       </div>
 
-      {/* ── Circular Timer display ──────────────────────────────── */}
-      <div className="flex flex-1 flex-col items-center justify-center gap-6">
-        <div className="relative flex items-center justify-center">
-          <svg
-            width="240"
-            height="240"
-            className={`-rotate-90 transition-all duration-300 ${isPaused ? 'animate-pulse opacity-75' : ''}`}
-          >
-            {/* Track */}
-            <circle
-              cx="120"
-              cy="120"
-              r={radius}
-              fill="none"
-              stroke="rgba(16,185,129,0.12)"
-              strokeWidth="10"
-            />
-            {/* Progress */}
-            <circle
-              cx="120"
-              cy="120"
-              r={radius}
-              fill="none"
-              stroke="#10b981"
-              strokeWidth="10"
-              strokeLinecap="round"
-              strokeDasharray={circumference}
-              strokeDashoffset={strokeDashoffset}
-              style={{ transition: isRunning ? 'stroke-dashoffset 0.1s linear' : 'none' }}
-            />
-          </svg>
-          {/* Centered Timer text - no inner elapsed, it's already shown above */}
-          <div className="absolute flex items-center justify-center">
-            <span
-              className={`text-6xl font-black tabular-nums transition-colors duration-300 ${
-                isRunning && !isPaused ? 'text-successGreen' : ''
-              } ${isPaused ? 'text-amber-500' : ''} ${
-                !isRunning && !isPaused ? 'text-slate-300' : ''
-              }`}
-              style={{ fontVariantNumeric: 'tabular-nums' }}
-            >
-              {formatTime(displaySeconds)}
-            </span>
-          </div>
+      {/* ── Set pill ───────────────────────────────────────────── */}
+      <div className="px-5 pb-4 flex justify-center">
+        <div className="inline-flex items-center gap-1.5 rounded-full bg-successGreen/15 px-3 py-1">
+          <span className="text-sm font-bold text-successGreen">
+            {t('workout.setOf', { current: currentSetNumber, total: ex.totalSets })}
+          </span>
         </div>
       </div>
 
-      {/* ── CTA ────────────────────────────────────────────────── */}
+      {/* ── Spacer to center the ring vertically ──────────────── */}
+      <div className="flex flex-1 flex-col">
+        <div className="flex-[0.8]" />
+        {/* ── Circular Timer display ──────────────────────────────── */}
+        <div className="flex items-center justify-center">
+          <div className="relative flex items-center justify-center">
+            <svg
+              width="240"
+              height="240"
+              className={`-rotate-90 transition-all duration-300 ${isPaused ? 'animate-pulse' : ''}`}
+            >
+              {/* Track */}
+              <circle
+                cx="120"
+                cy="120"
+                r={radius}
+                fill="none"
+                stroke={isPaused ? 'rgba(217,119,6,0.12)' : 'rgba(16,185,129,0.12)'}
+                strokeWidth="14"
+              />
+              {/* Progress */}
+              <circle
+                cx="120"
+                cy="120"
+                r={radius}
+                fill="none"
+                stroke={isPaused ? '#d97706' : '#10b981'}
+                strokeWidth="14"
+                strokeLinecap="round"
+                strokeDasharray={circumference}
+                strokeDashoffset={strokeDashoffset}
+                style={{ transition: isRunning ? 'stroke-dashoffset 0.1s linear' : 'none' }}
+              />
+            </svg>
+            {/* Centered Timer text - no inner elapsed, it's already shown above */}
+            <div className="absolute flex items-center justify-center">
+              <span
+                className={`text-6xl font-black tabular-nums transition-colors duration-300 ${
+                  isPaused ? 'animate-pulse text-amber-500' : ''
+                } ${
+                  isRunning && !isPaused ? 'text-successGreen' : ''
+                } ${
+                  !isRunning && !isPaused ? 'text-slate-300' : ''
+                }`}
+                style={{ fontVariantNumeric: 'tabular-nums' }}
+              >
+                {formatTime(displaySeconds)}
+              </span>
+            </div>
+          </div>
+        </div>
+        <div className="flex-[1.2]" />
+      </div>
+
+      {/* ── CTA (fixed at bottom) ────────────────────────────── */}
       <div
-        className="sticky bottom-0 flex flex-col gap-3 bg-gradient-to-t from-bg-0 via-bg-0/95 to-transparent px-5 pb-8 pt-4"
+        className="fixed inset-x-0 bottom-0 mx-auto max-w-md flex flex-col gap-3 bg-gradient-to-t from-bg-0 via-bg-0/95 to-transparent px-5 pb-8 pt-4"
         style={{ paddingBottom: 'max(2rem, env(safe-area-inset-bottom))' }}
       >
         {phase.kind !== 'timed_running' ? (
@@ -218,11 +225,11 @@ export function TimedExerciseScreen({ onExitRequest }: Props) {
             <Button
               id="btn-stop-timer"
               variant="ghost"
-              className="flex-1 flex items-center justify-center gap-2 py-4 text-base font-semibold"
+              className="flex-1 flex items-center justify-center gap-2 py-4 text-base font-semibold bg-slate-700 hover:bg-slate-600"
               loading={saving}
               onClick={handleStop}
             >
-              <Square size={20} fill="currentColor" />
+              <SkipForward size={20} />
               {t('workout.skip')}
             </Button>
           </div>

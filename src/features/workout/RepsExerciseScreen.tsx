@@ -31,7 +31,7 @@ export function RepsExerciseScreen({ onExitRequest }: Props) {
   }
 
   return (
-    <div className="flex min-h-full flex-col">
+    <div className="flex min-h-screen flex-col" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
       {/* ── Header ─────────────────────────────────────────────── */}
       <div className="flex items-center justify-between px-5 pt-5 pb-3">
         <div className="flex flex-col">
@@ -145,9 +145,9 @@ export function RepsExerciseScreen({ onExitRequest }: Props) {
         </div>
       </div>
 
-      {/* ── CTA ────────────────────────────────────────────────── */}
+      {/* ── CTA (fixed at bottom) ────────────────────────────── */}
       <div
-        className="sticky bottom-0 bg-gradient-to-t from-bg-0 via-bg-0/95 to-transparent px-5 pb-8 pt-4"
+        className="fixed inset-x-0 bottom-0 mx-auto max-w-md bg-gradient-to-t from-bg-0 via-bg-0/95 to-transparent px-5 pb-8 pt-4"
         style={{ paddingBottom: 'max(2rem, env(safe-area-inset-bottom))' }}
       >
         <Button

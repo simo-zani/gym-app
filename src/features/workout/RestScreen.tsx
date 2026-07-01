@@ -87,14 +87,14 @@ export function RestScreen({ onExitRequest }: Props) {
   const exerciseElapsed = useElapsedSeconds(currentExerciseStartedAtMs);
   const workoutElapsed = useElapsedSeconds(startedAtMs);
 
-  const radius = 96;
+  const radius = 105;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference * (1 - progress);
 
-  // Per-exercise completion map
+  // Per-exercise completion map (keyed by planExerciseId for uniqueness)
   const setsByExercise: Record<string, number> = {};
   for (const s of sets) {
-    setsByExercise[s.exerciseName] = (setsByExercise[s.exerciseName] ?? 0) + 1;
+    setsByExercise[s.planExerciseId] = (setsByExercise[s.planExerciseId] ?? 0) + 1;
   }
 
   // 10 Motivational/educational rest tips
@@ -133,7 +133,7 @@ export function RestScreen({ onExitRequest }: Props) {
   }, [shuffledTips]);
 
   return (
-    <div className="relative flex min-h-full flex-col">
+    <div className="relative flex min-h-screen flex-col" style={{ paddingBottom: '120px' }}>
       {/* ── Header ─────────────────────────────────────────────── */}
       <div className="flex items-center justify-between px-5 pt-5 pb-3">
         <div className="flex flex-col">
@@ -191,8 +191,8 @@ export function RestScreen({ onExitRequest }: Props) {
         </div>
       </div>
 
-      {/* ── Circular timer with side buttons ── */}
-      <div className="flex flex-1 flex-col items-center justify-center gap-6">
+      {/* ── Circular timer with side buttons (centered) ── */}
+      <div className="flex flex-1 flex-col items-center justify-center">
         <div className="flex items-center justify-center gap-4 w-full px-5">
           <button
             id="rest-minus15-side"
@@ -206,11 +206,11 @@ export function RestScreen({ onExitRequest }: Props) {
             <svg
               width="240"
               height="240"
-              className={`-rotate-90 transition-all duration-300 ${isPaused ? 'animate-pulse opacity-75' : ''}`}
+              className={`-rotate-90 transition-all duration-300 ${isPaused ? 'animate-pulse' : ''}`}
             >
-              <circle cx="120" cy="120" r={radius} fill="none" stroke="rgba(96,165,250,0.12)" strokeWidth="10" />
+              <circle cx="120" cy="120" r={radius} fill="none" stroke={isPaused ? 'rgba(217,119,6,0.12)' : 'rgba(96,165,250,0.12)'} strokeWidth="14" />
               <circle
-                cx="120" cy="120" r={radius} fill="none" stroke="#60a5fa" strokeWidth="10"
+                cx="120" cy="120" r={radius} fill="none" stroke={isPaused ? '#d97706' : '#60a5fa'} strokeWidth="14"
                 strokeLinecap="round" strokeDasharray={circumference} strokeDashoffset={strokeDashoffset}
                 style={{ transition: 'stroke-dashoffset 0.1s linear' }}
               />
@@ -218,7 +218,7 @@ export function RestScreen({ onExitRequest }: Props) {
             <div className="absolute flex items-center justify-center">
               <span
                 className={`text-6xl font-black tabular-nums transition-colors duration-300 ${
-                  isPaused ? 'text-amber-500' : 'text-blueSoft'
+                  isPaused ? 'animate-pulse text-amber-500' : 'text-blueSoft'
                 }`}
                 style={{ fontVariantNumeric: 'tabular-nums' }}
               >
@@ -235,14 +235,16 @@ export function RestScreen({ onExitRequest }: Props) {
             +15s
           </button>
         </div>
+      </div>
 
-        {/* Tip bar */}
+      {/* ── Tip bar and next set info ── */}
+      <div className="flex flex-col gap-3 items-center px-5">
         {shuffledTips.length > 0 && (() => {
           const currentTip = shuffledTips[tipIndex];
           const TipIcon = currentTip.icon;
           return (
             <div
-              className={`flex items-center gap-3 rounded-2xl border border-blueSoft/10 bg-blueGlow/5 px-4 py-3.5 mx-5 w-[calc(100%-2.5rem)] max-w-sm shadow-lg shadow-blueGlow/5 transition-opacity duration-500 ease-in-out ${
+              className={`flex items-center gap-3 rounded-2xl border border-blueSoft/10 bg-blueGlow/5 px-4 py-3.5 w-[calc(100%-2.5rem)] max-w-sm shadow-lg shadow-blueGlow/5 transition-opacity duration-500 ease-in-out ${
                 visible ? 'opacity-100' : 'opacity-0'
               }`}
             >
@@ -256,7 +258,7 @@ export function RestScreen({ onExitRequest }: Props) {
 
         {/* Next set info */}
         {nextEx && (
-          <div className="mx-5 w-[calc(100%-2.5rem)] max-w-sm rounded-2xl border border-bg-3 bg-bg-1 px-5 py-4 text-center">
+          <div className="w-[calc(100%-2.5rem)] max-w-sm rounded-2xl border border-bg-3 bg-bg-1 px-5 py-4 text-center">
             <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-1">
               {t('workout.upNext')}
             </p>
@@ -273,9 +275,9 @@ export function RestScreen({ onExitRequest }: Props) {
         )}
       </div>
 
-      {/* ── Controls ── */}
+      {/* ── Controls (fixed at bottom) ── */}
       <div
-        className="sticky bottom-0 flex gap-3 bg-gradient-to-t from-bg-0 via-bg-0/95 to-transparent px-5 pb-8 pt-4"
+        className="fixed inset-x-0 bottom-0 mx-auto max-w-md flex gap-3 bg-gradient-to-t from-bg-0 via-bg-0/95 to-transparent px-5 pb-8 pt-4"
         style={{ paddingBottom: 'max(2rem, env(safe-area-inset-bottom))' }}
       >
         <Button
@@ -292,8 +294,8 @@ export function RestScreen({ onExitRequest }: Props) {
         </Button>
         <Button
           id="btn-skip-rest"
-          variant="success"
-          className="flex-1 flex items-center justify-center gap-2 py-4 text-base font-bold"
+          variant="ghost"
+          className="flex-1 flex items-center justify-center gap-2 py-4 text-base font-bold bg-slate-700 hover:bg-slate-600"
           onClick={skipRest}
         >
           <SkipForward size={20} />
@@ -332,7 +334,7 @@ export function RestScreen({ onExitRequest }: Props) {
           {/* Exercise list */}
           <div className="flex-1 overflow-y-auto px-5 py-4 space-y-2.5">
             {exercises.map((ex, idx) => {
-              const setsCompleted = setsByExercise[ex.exerciseName] ?? 0;
+              const setsCompleted = setsByExercise[ex.planExerciseId] ?? 0;
               const isDone = setsCompleted >= ex.totalSets;
               const isCurrentlyResting = idx === nextExerciseIndex - 1 && nextSetNumber !== 1;
               const isNext = idx === nextExerciseIndex;

@@ -36,12 +36,12 @@ export function WarmupScreen({ onExitRequest }: Props) {
   const secondsLeft = useCountdown(true, phase.targetEpochMs, handleWarmupEnd);
   const progress = Math.max(0, Math.min(1, secondsLeft / 10));
 
-  const radius = 96;
+  const radius = 105;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference * (1 - progress);
 
   return (
-    <div className="flex min-h-full flex-col">
+    <div className="flex min-h-screen flex-col" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
       {/* ── Header ─────────────────────────────────────────────── */}
       <div className="flex items-center justify-between px-5 pt-5 pb-3">
         <div className="flex flex-col">
@@ -83,7 +83,7 @@ export function WarmupScreen({ onExitRequest }: Props) {
       </div>
 
       {/* ── Circular Warmup countdown ──────────────────────────── */}
-      <div className="flex flex-1 flex-col items-center justify-center gap-6">
+      <div className="flex flex-1 flex-col items-center justify-center">
         <div className="relative flex items-center justify-center">
           <svg width="240" height="240" className="-rotate-90">
             <circle
@@ -92,7 +92,7 @@ export function WarmupScreen({ onExitRequest }: Props) {
               r={radius}
               fill="none"
               stroke="rgba(16,185,129,0.12)"
-              strokeWidth="10"
+              strokeWidth="14"
             />
             <circle
               cx="120"
@@ -100,7 +100,7 @@ export function WarmupScreen({ onExitRequest }: Props) {
               r={radius}
               fill="none"
               stroke="#10b981"
-              strokeWidth="10"
+              strokeWidth="14"
               strokeLinecap="round"
               strokeDasharray={circumference}
               strokeDashoffset={strokeDashoffset}
@@ -119,21 +119,17 @@ export function WarmupScreen({ onExitRequest }: Props) {
             </span>
           </div>
         </div>
-
-        <p className="text-sm text-slate-400 text-center px-8">
-          {t('workout.preparationHint')}
-        </p>
       </div>
 
-      {/* ── CTA ────────────────────────────────────────────────── */}
+      {/* ── CTA (fixed at bottom) ────────────────────────────── */}
       <div
-        className="sticky bottom-0 flex flex-col gap-3 bg-gradient-to-t from-bg-0 via-bg-0/95 to-transparent px-5 pb-8 pt-4"
+        className="fixed inset-x-0 bottom-0 mx-auto max-w-md flex flex-col gap-3 bg-gradient-to-t from-bg-0 via-bg-0/95 to-transparent px-5 pb-8 pt-4"
         style={{ paddingBottom: 'max(2rem, env(safe-area-inset-bottom))' }}
       >
         <Button
           id="btn-skip-warmup"
-          variant="success"
-          className="flex w-full items-center justify-center gap-2 py-4 text-base font-bold"
+          variant="ghost"
+          className="flex w-full items-center justify-center gap-2 py-4 text-base font-bold bg-slate-700 hover:bg-slate-600"
           onClick={skipWarmup}
         >
           <SkipForward size={20} />

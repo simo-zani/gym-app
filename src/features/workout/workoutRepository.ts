@@ -15,6 +15,7 @@ export interface CreateSessionParams {
 
 export interface SaveSetParams {
   sessionId: string;
+  planExerciseId: string;
   exerciseId: string;
   exerciseName: string;
   setNumber: number;
@@ -49,6 +50,7 @@ export const workoutRepository = {
   /** Inserts a single completed set into workout_session_sets. */
   async saveSet({
     sessionId,
+    planExerciseId: _planExerciseId,
     exerciseId,
     exerciseName,
     setNumber,

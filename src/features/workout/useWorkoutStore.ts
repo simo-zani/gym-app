@@ -30,6 +30,7 @@ export interface ExerciseInSession {
 }
 
 export interface SetResult {
+  planExerciseId: string;
   exerciseName: string;
   setNumber: number;
   mode: ExerciseMode;
@@ -243,6 +244,7 @@ export const useWorkoutStore = create<WorkoutStore>()(
           if (sessionId) {
             await workoutRepository.saveSet({
               sessionId,
+              planExerciseId: ex.planExerciseId,
               exerciseId: ex.exerciseId,
               exerciseName: ex.exerciseName,
               setNumber: currentSetNumber,
@@ -259,6 +261,7 @@ export const useWorkoutStore = create<WorkoutStore>()(
         const newSets: SetResult[] = [
           ...state.sets,
           {
+            planExerciseId: ex.planExerciseId,
             exerciseName: ex.exerciseName,
             setNumber: currentSetNumber,
             mode: ex.mode,
