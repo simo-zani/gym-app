@@ -81,7 +81,7 @@ export function RestScreen({ onExitRequest }: Props) {
     : nextExerciseIndex]?.restSeconds ?? 60;
 
   const displaySeconds = isPaused ? (pausedSecondsLeft ?? 0) : secondsLeft;
-  const progress = Math.max(0, Math.min(1, displaySeconds / totalRest));
+  const progress = Math.max(0, Math.min(1, (totalRest - displaySeconds) / totalRest));
 
   // Elapsed timers
   const exerciseElapsed = useElapsedSeconds(currentExerciseStartedAtMs);
@@ -133,7 +133,7 @@ export function RestScreen({ onExitRequest }: Props) {
   }, [shuffledTips]);
 
   return (
-    <div className="relative flex min-h-screen flex-col" style={{ paddingBottom: '120px' }}>
+    <div className="relative flex min-h-screen flex-col" style={{ paddingTop: 'env(safe-area-inset-top)', paddingBottom: '120px' }}>
       {/* ── Header ─────────────────────────────────────────────── */}
       <div className="flex items-center justify-between px-5 pt-5 pb-3">
         <div className="flex flex-col">

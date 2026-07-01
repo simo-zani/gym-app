@@ -27,6 +27,8 @@ export interface ExerciseInSession {
   notes: string | null;
   /** Populated when mode === 'pyramid'; null otherwise. */
   pyramidConfig: PyramidSet[] | null;
+  /** Whether this exercise should be performed. Defaults to true. */
+  isActive: boolean;
 }
 
 export interface SetResult {
@@ -38,6 +40,8 @@ export interface SetResult {
   durationSecondsDone: number | null;
   weightKg: number | null;
   completedAt: string;
+  /** Whether this set was skipped (only applicable for timed exercises completed <75%). */
+  wasSkipped: boolean;
 }
 
 export type Phase =
@@ -85,6 +89,8 @@ interface WorkoutState {
   saving: boolean;
   /** Start time of the current exercise, used for calculating elapsed exercise time. */
   currentExerciseStartedAtMs: number | null;
+  /** Set of planExerciseIds that are disabled/skipped. */
+  disabledExercises: Set<string>;
 }
 
 interface WorkoutActions {
@@ -97,6 +103,9 @@ interface WorkoutActions {
 
   setEditReps: (reps: number) => void;
   setEditWeight: (weight: number | null) => void;
+
+  /** Toggle whether an exercise should be performed. */
+  toggleExerciseActive: (planExerciseId: string) => void;
 
   /**
    * Mark the current set as complete.
@@ -162,6 +171,7 @@ const INITIAL: WorkoutState = {
   editWeight: null,
   saving: false,
   currentExerciseStartedAtMs: null,
+  disabledExercises: new Set(),
 };
 
 // ─── Store ────────────────────────────────────────────────────────────────────
@@ -211,6 +221,18 @@ export const useWorkoutStore = create<WorkoutStore>()(
       setEditReps: (reps) => set({ editReps: Math.max(0, reps) }),
       setEditWeight: (weight) => set({ editWeight: weight }),
 
+      // ── exercise selection ─────────────────────────────────────────────────
+      toggleExerciseActive: (planExerciseId) => {
+        const { disabledExercises } = get();
+        const newDisabled = new Set(disabledExercises);
+        if (newDisabled.has(planExerciseId)) {
+          newDisabled.delete(planExerciseId);
+        } else {
+          newDisabled.add(planExerciseId);
+        }
+        set({ disabledExercises: newDisabled });
+      },
+
       // ── completeCurrentSet ─────────────────────────────────────────────────
       completeCurrentSet: async (overrides) => {
         const state = get();
@@ -258,6 +280,11 @@ export const useWorkoutStore = create<WorkoutStore>()(
           // Non-blocking: don't abort the workout on a save failure
         }
 
+        // Determine if this set was skipped (timed exercise completed <75% of time)
+        const wasSkipped = effectiveIsTimedMode
+          ? (durationDone ?? 0) < (totalDuration * 0.75)
+          : false;
+
         const newSets: SetResult[] = [
           ...state.sets,
           {
@@ -269,6 +296,7 @@ export const useWorkoutStore = create<WorkoutStore>()(
             durationSecondsDone: durationDone,
             weightKg: editWeight,
             completedAt: new Date().toISOString(),
+            wasSkipped,
           },
         ];
 

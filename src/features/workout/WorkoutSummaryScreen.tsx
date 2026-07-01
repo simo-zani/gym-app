@@ -72,15 +72,21 @@ export function WorkoutSummaryScreen() {
         </p>
         <div className="divide-y divide-bg-3">
           {sets.map((s, i) => (
-            <div key={i} className="flex items-center justify-between px-4 py-3">
+            <div
+              key={i}
+              className={`flex items-center justify-between px-4 py-3 ${s.wasSkipped ? 'bg-bg-2/50' : ''}`}
+            >
               <div className="flex flex-col">
-                <span className="text-sm font-semibold text-slate-200">{s.exerciseName}</span>
+                <span className={`text-sm font-semibold ${s.wasSkipped ? 'text-amber-500 line-through' : 'text-slate-200'}`}>
+                  {s.exerciseName}
+                </span>
                 <span className="text-xs text-slate-500">
                   {t('workout.setLabel')} {s.setNumber}
+                  {s.wasSkipped && <span className="ml-2 text-amber-500 font-semibold">(saltato)</span>}
                 </span>
               </div>
               <div className="text-right">
-                <span className="text-sm font-bold text-slate-100">
+                <span className={`text-sm font-bold ${s.wasSkipped ? 'text-amber-500' : 'text-slate-100'}`}>
                   {s.mode === 'reps'
                     ? `${s.repsDone ?? 0} rep${s.repsDone !== 1 ? 's' : ''}`
                     : `${s.durationSecondsDone ?? 0}s`}

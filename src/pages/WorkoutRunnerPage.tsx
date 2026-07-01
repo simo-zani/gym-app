@@ -89,6 +89,7 @@ export function WorkoutRunnerPage() {
       restSeconds: item.rest_seconds,
       notes: item.notes,
       pyramidConfig: item.pyramid_config ?? null,
+      isActive: true,
     }));
 
     unlockAudio();
@@ -146,6 +147,77 @@ export function WorkoutRunnerPage() {
     return (
       <div className="mx-auto flex min-h-screen w-full max-w-md items-center justify-center bg-bg-0">
         <Spinner />
+      </div>
+    );
+  }
+
+  // ── Pre-workout exercise selection ────────────────────────────────────────
+  if (phase.kind === 'idle' && planQuery.data && exercisesQuery.data && exercisesQuery.data.length > 0) {
+    const { exercises, disabledExercises, toggleExerciseActive } = useWorkoutStore.getState();
+
+    return (
+      <div className="mx-auto flex min-h-screen w-full max-w-md flex-col bg-bg-0" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+        {/* Header */}
+        <div className="px-5 pt-6 pb-4">
+          <h1 className="text-2xl font-extrabold text-slate-100">{planQuery.data.name}</h1>
+          <p className="mt-1 text-sm text-slate-400">{t('common.selectExercises')}</p>
+        </div>
+
+        {/* Exercise list with checkboxes */}
+        <div className="flex-1 overflow-y-auto px-5 pb-6">
+          <div className="space-y-2">
+            {exercises.map((ex) => {
+              const isDisabled = disabledExercises.has(ex.planExerciseId);
+              return (
+                <button
+                  key={ex.planExerciseId}
+                  onClick={() => toggleExerciseActive(ex.planExerciseId)}
+                  className={`flex w-full items-center gap-3 rounded-lg px-4 py-3 border transition ${
+                    isDisabled
+                      ? 'border-bg-3 bg-bg-2/50 opacity-60'
+                      : 'border-blueSoft/30 bg-blueSoft/5 hover:bg-blueSoft/10'
+                  }`}
+                >
+                  <div className={`h-5 w-5 rounded border-2 flex items-center justify-center ${
+                    isDisabled ? 'border-slate-500 bg-transparent' : 'border-blueSoft bg-blueSoft'
+                  }`}>
+                    {!isDisabled && <span className="text-white text-xs">✓</span>}
+                  </div>
+                  <div className="flex-1 text-left">
+                    <p className={`font-semibold ${isDisabled ? 'text-slate-500 line-through' : 'text-slate-200'}`}>
+                      {ex.exerciseName}
+                    </p>
+                    <p className="text-xs text-slate-500">
+                      {ex.totalSets} set{ex.totalSets !== 1 ? 's' : ''} · {ex.mode === 'reps' ? ex.reps + ' reps' : ex.durationSeconds + 's'}
+                    </p>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Start button */}
+        <div className="sticky bottom-0 px-5 pb-8 pt-4 bg-gradient-to-t from-bg-0 via-bg-0/95 to-transparent" style={{ paddingBottom: 'max(2rem, env(safe-area-inset-bottom))' }}>
+          <Button
+            variant="success"
+            className="w-full py-4 text-lg font-bold"
+            onClick={() => {
+              const { start, exercises: allExercises, disabledExercises } = useWorkoutStore.getState();
+              const filtered = allExercises.filter(ex => !disabledExercises.has(ex.planExerciseId));
+              start({ id: planQuery.data!.id, name: planQuery.data!.name, exercises: filtered });
+            }}
+          >
+            {t('workout.startWorkout') || 'Inizia allenamento'}
+          </Button>
+          <Button
+            variant="ghost"
+            className="w-full mt-2 py-3 text-sm"
+            onClick={() => navigate('/')}
+          >
+            {t('common.cancel')}
+          </Button>
+        </div>
       </div>
     );
   }
