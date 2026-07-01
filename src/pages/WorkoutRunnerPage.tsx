@@ -62,18 +62,8 @@ export function WorkoutRunnerPage() {
 
     if (!isWorkoutActive) return;
 
-    const handlePopState = () => {
-      // Re-push state to block the back navigation
-      window.history.pushState(null, '', window.location.pathname);
-    };
-
-    // Push state to prevent initial back navigation
-    window.history.pushState(null, '', window.location.pathname);
-    window.addEventListener('popstate', handlePopState);
-
-    return () => {
-      window.removeEventListener('popstate', handlePopState);
-    };
+    // Replace the current history entry so there's nothing to go back to
+    window.history.replaceState({ isWorkout: true }, '', window.location.pathname);
   }, [phase.kind]);
 
   // ── Auto-start ─────────────────────────────────────────────────────────────

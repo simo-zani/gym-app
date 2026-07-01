@@ -83,15 +83,17 @@ export function WarmupScreen({ onExitRequest }: Props) {
       </div>
 
       {/* ── Circular Warmup countdown ──────────────────────────── */}
-      <div className="flex flex-1 flex-col items-center justify-center">
-        <div className="relative flex items-center justify-center">
+      <div className="flex flex-1 flex-col">
+        <div className="flex-[0.8]" />
+        <div className="flex items-center justify-center">
+          <div className="relative flex items-center justify-center">
           <svg width="240" height="240" className="-rotate-90">
             <circle
               cx="120"
               cy="120"
               r={radius}
               fill="none"
-              stroke="rgba(16,185,129,0.12)"
+              stroke="rgba(245,158,11,0.12)"
               strokeWidth="14"
             />
             <circle
@@ -99,7 +101,7 @@ export function WarmupScreen({ onExitRequest }: Props) {
               cy="120"
               r={radius}
               fill="none"
-              stroke="#10b981"
+              stroke="#f59e0b"
               strokeWidth="14"
               strokeLinecap="round"
               strokeDasharray={circumference}
@@ -108,17 +110,19 @@ export function WarmupScreen({ onExitRequest }: Props) {
             />
           </svg>
           <div className="absolute flex flex-col items-center justify-center text-center">
-            <span className="text-xs font-semibold uppercase tracking-widest text-successGreen/60 mb-1">
+            <span className="text-xs font-semibold uppercase tracking-widest text-amber-500/60 mb-1">
               {t('workout.getReady')}
             </span>
             <span
-              className="text-6xl font-black tabular-nums text-successGreen"
+              className="text-6xl font-black tabular-nums text-amber-500"
               style={{ fontVariantNumeric: 'tabular-nums' }}
             >
               {formatTime(secondsLeft)}
             </span>
           </div>
         </div>
+        </div>
+        <div className="flex-[1.2]" />
       </div>
 
       {/* ── CTA (fixed at bottom) ────────────────────────────── */}

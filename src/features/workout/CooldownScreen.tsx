@@ -96,15 +96,17 @@ export function CooldownScreen({ onExitRequest }: Props) {
       </div>
 
       {/* ── Circular cooldown countdown ────────────────────────── */}
-      <div className="flex flex-1 flex-col items-center justify-center">
-        <div className="relative flex items-center justify-center">
+      <div className="flex flex-1 flex-col">
+        <div className="flex-[0.8]" />
+        <div className="flex items-center justify-center">
+          <div className="relative flex items-center justify-center">
           <svg width="240" height="240" className="-rotate-90">
             <circle
               cx="120"
               cy="120"
               r={radius}
               fill="none"
-              stroke="rgba(96,165,250,0.12)"
+              stroke="rgba(168,85,247,0.12)"
               strokeWidth="14"
             />
             <circle
@@ -112,7 +114,7 @@ export function CooldownScreen({ onExitRequest }: Props) {
               cy="120"
               r={radius}
               fill="none"
-              stroke="#60a5fa"
+              stroke="#a855f7"
               strokeWidth="14"
               strokeLinecap="round"
               strokeDasharray={circumference}
@@ -122,7 +124,7 @@ export function CooldownScreen({ onExitRequest }: Props) {
           </svg>
           <div className="absolute flex flex-col items-center justify-center text-center">
             <span
-              className="text-6xl font-black tabular-nums text-blueSoft"
+              className="text-6xl font-black tabular-nums text-purple-500"
               style={{ fontVariantNumeric: 'tabular-nums' }}
             >
               {formatTime(secondsLeft)}
@@ -132,6 +134,8 @@ export function CooldownScreen({ onExitRequest }: Props) {
             </span>
           </div>
         </div>
+        </div>
+        <div className="flex-[1.2]" />
       </div>
 
       {/* ── CTA (fixed at bottom) ────────────────────────────── */}
