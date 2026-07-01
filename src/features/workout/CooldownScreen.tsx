@@ -6,7 +6,7 @@ import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { SkipForward } from 'lucide-react';
 import { useWorkoutStore } from './useWorkoutStore';
-import { useCountdown, formatTime } from './useCountdown';
+import { useCountdown } from './useCountdown';
 import { playRestEnd, vibrateRestEnd } from './audio';
 import { Button } from '@/components/ui/Button';
 import { ExerciseProgressBar } from './ExerciseProgressBar';
@@ -123,12 +123,6 @@ export function CooldownScreen({ onExitRequest }: Props) {
             />
           </svg>
           <div className="absolute flex flex-col items-center justify-center text-center">
-            <span
-              className="text-6xl font-black tabular-nums text-purple-500"
-              style={{ fontVariantNumeric: 'tabular-nums' }}
-            >
-              {formatTime(secondsLeft)}
-            </span>
             <span className="mt-1 text-[11px] font-semibold tabular-nums text-slate-500">
               {formatElapsed(exerciseElapsed)}
             </span>

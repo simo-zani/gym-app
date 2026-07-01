@@ -80,8 +80,11 @@ export function RestScreen({ onExitRequest }: Props) {
     ? nextSetNumber === 1 ? nextExerciseIndex - 1 : nextExerciseIndex
     : nextExerciseIndex]?.restSeconds ?? 60;
 
-  const displaySeconds = isPaused ? (pausedSecondsLeft ?? 0) : secondsLeft;
-  const progress = Math.max(0, Math.min(1, (totalRest - displaySeconds) / totalRest));
+  const displaySeconds = Math.min(
+    isPaused ? (pausedSecondsLeft ?? 0) : secondsLeft,
+    totalRest
+  );
+  const progress = Math.max(0, Math.min(1, displaySeconds / totalRest));
 
   // Elapsed timers
   const exerciseElapsed = useElapsedSeconds(currentExerciseStartedAtMs);
@@ -140,12 +143,8 @@ export function RestScreen({ onExitRequest }: Props) {
           <span className="text-xs font-semibold uppercase tracking-widest text-blueSoft/70">
             {t('workout.rest')}
           </span>
-          <h2 className="mt-0.5 text-lg font-bold text-slate-300">
-            {nextSetNumber === 1
-              ? t('workout.nextExercise')
-              : t('workout.nextSet', { set: nextSetNumber })}
-            :&nbsp;
-            <span className="text-slate-100">{nextEx?.exerciseName}</span>
+          <h2 className="mt-0.5 text-lg font-bold text-slate-100">
+            {nextEx?.exerciseName}
           </h2>
         </div>
         <div className="flex items-center gap-2">

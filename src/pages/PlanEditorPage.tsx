@@ -235,10 +235,6 @@ export function PlanEditorPage() {
           </p>
         )}
 
-        <p className="mb-3 px-1 text-xs text-slate-500">
-          {t('plans.dragHint')}
-        </p>
-
         {exercisesQuery.isLoading && <Spinner />}
 
         {order.length === 0 && !exercisesQuery.isLoading && (
