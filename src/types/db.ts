@@ -93,6 +93,10 @@ export interface WorkoutSession {
   plan_name_snapshot: string | null;
   started_at: string;
   ended_at: string | null;
+  /** Set only when the workout is genuinely completed from the summary screen. */
+  completed_at: string | null;
+  /** Subjective post-workout rating, 1..5 (null if not rated). */
+  rating: number | null;
   notes: string | null;
   created_at: string;
   updated_at: string;

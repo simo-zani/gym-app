@@ -146,8 +146,8 @@ interface WorkoutActions {
   /** Transitions phase from exercise hub to next exercise's rest timer. */
   startNextExerciseAfterHub: () => void;
 
-  /** Finish the workout session (write ended_at + notes). */
-  finish: (notes?: string) => Promise<void>;
+  /** Finish the workout session (write ended_at + notes; optionally completed_at + rating). */
+  finish: (opts?: { notes?: string; rating?: number | null; completed?: boolean }) => Promise<void>;
 
   /** Reset store to idle (called after finish navigates away). */
   reset: () => void;
@@ -579,11 +579,11 @@ export const useWorkoutStore = create<WorkoutStore>()(
       },
 
       // ── finish ─────────────────────────────────────────────────────────────
-      finish: async (notes) => {
+      finish: async (opts) => {
         const { sessionId } = get();
         if (sessionId) {
           try {
-            await workoutRepository.finishSession(sessionId, notes);
+            await workoutRepository.finishSession(sessionId, opts);
           } catch {
             // Non-blocking
           }

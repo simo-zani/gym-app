@@ -5,9 +5,11 @@
  * Displays the full workout plan with completed exercises ticked off and upcoming
  * exercises listed below, then a CTA to begin resting before the next set.
  */
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { CheckCircle2, Circle, ChevronRight, Dumbbell } from 'lucide-react';
+import { CheckCircle2, Circle, ChevronRight, ChevronDown, X } from 'lucide-react';
 import { useWorkoutStore } from './useWorkoutStore';
+import { formatTime } from './useCountdown';
 import { Button } from '@/components/ui/Button';
 import { useElapsedSeconds, formatElapsed } from './useElapsedSeconds';
 
@@ -26,20 +28,25 @@ export function ExerciseHubScreen({ onExitRequest }: Props) {
     startNextExerciseAfterHub,
   } = useWorkoutStore();
 
+  // Which exercise row is expanded to reveal its per-set breakdown
+  const [expandedExercise, setExpandedExercise] = useState<string | null>(null);
+
   if (phase.kind !== 'exercise_hub') return null;
   const { nextExerciseIndex } = phase;
-  const nextEx = exercises[nextExerciseIndex];
 
   const workoutElapsed = useElapsedSeconds(startedAtMs);
 
-  // Build per-exercise completion map: exerciseName -> sets completed
+  // Build per-exercise completion maps keyed by planExerciseId (unique even when
+  // the same exercise name appears more than once in the plan).
   const setsByExercise: Record<string, number> = {};
+  const setResultsByExercise: Record<string, Record<number, (typeof sets)[number]>> = {};
   for (const s of sets) {
-    setsByExercise[s.exerciseName] = (setsByExercise[s.exerciseName] ?? 0) + 1;
+    setsByExercise[s.planExerciseId] = (setsByExercise[s.planExerciseId] ?? 0) + 1;
+    (setResultsByExercise[s.planExerciseId] ??= {})[s.setNumber] = s;
   }
 
   return (
-    <div className="flex min-h-full flex-col">
+    <div className="flex h-[100dvh] flex-col" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
       {/* ── Header ───────────────────────────────────────────────── */}
       <div className="flex items-center justify-between px-5 pt-5 pb-3">
         <div>
@@ -69,74 +76,148 @@ export function ExerciseHubScreen({ onExitRequest }: Props) {
       </div>
 
       {/* ── Exercise list ─────────────────────────────────────────── */}
-      <div className="flex-1 overflow-y-auto px-5 py-3 space-y-2.5">
+      <div className="min-h-0 flex-1 overflow-y-auto px-5 py-3 space-y-2.5">
         {exercises.map((ex, idx) => {
-          const setsCompleted = setsByExercise[ex.exerciseName] ?? 0;
+          const setsCompleted = setsByExercise[ex.planExerciseId] ?? 0;
           const isDone = setsCompleted >= ex.totalSets;
           const isNext = idx === nextExerciseIndex;
           const isPast = idx < nextExerciseIndex;
+          const isCompleted = isDone || isPast;
+
+          const isExpanded = expandedExercise === ex.planExerciseId;
+          const exSetResults = setResultsByExercise[ex.planExerciseId] ?? {};
 
           return (
             <div
               key={ex.planExerciseId}
-              className={`flex items-center gap-3 rounded-2xl px-4 py-3.5 border transition-all duration-300 ${
+              className={`rounded-2xl border transition-all duration-300 ${
                 isNext
                   ? 'border-successGreen/40 bg-successGreen/5 shadow-lg shadow-successGreen/5'
-                  : isDone || isPast
-                  ? 'border-bg-3/40 bg-bg-1/60 opacity-70'
+                  : isCompleted
+                  ? 'border-bg-3/40 bg-bg-1/60'
                   : 'border-bg-3/30 bg-bg-1/40'
-              }`}
+              } ${isCompleted && !isExpanded ? 'opacity-70' : ''}`}
             >
-              {/* Status icon */}
-              <div className="shrink-0">
-                {isDone || isPast ? (
-                  <CheckCircle2
-                    size={22}
-                    className="text-successGreen"
-                    strokeWidth={2}
-                  />
-                ) : isNext ? (
-                  <ChevronRight
-                    size={22}
-                    className="text-successGreen"
-                    strokeWidth={2.5}
-                  />
-                ) : (
-                  <Circle size={22} className="text-slate-600" strokeWidth={1.5} />
-                )}
-              </div>
-
-              {/* Exercise info */}
-              <div className="min-w-0 flex-1">
-                <p
-                  className={`truncate font-semibold leading-tight ${
-                    isNext ? 'text-slate-100' : isDone || isPast ? 'text-slate-400 line-through' : 'text-slate-400'
-                  }`}
-                >
-                  {ex.exerciseName}
-                </p>
-                <p className="mt-0.5 text-xs text-slate-500">
-                  {ex.totalSets} {t('workout.setLabel').toLowerCase()}
-                  {ex.mode === 'reps' && ex.reps != null ? ` × ${ex.reps}` : ''}
-                  {ex.mode === 'time' && ex.durationSeconds != null
-                    ? ` × ${ex.durationSeconds}s`
-                    : ''}
-                  {ex.mode === 'pyramid' ? ` × ${t('plans.pyramidal').toLowerCase()}` : ''}
-                  {ex.weightKg != null ? ` · ${ex.weightKg} kg` : ''}
-                </p>
-              </div>
-
-              {/* Progress badge */}
-              {isNext && (
-                <div className="shrink-0 rounded-full bg-successGreen/15 px-2 py-0.5">
-                  <span className="text-[10px] font-bold text-successGreen">
-                    {t('workout.upNext').toUpperCase()}
-                  </span>
-                </div>
-              )}
-              {(isDone || isPast) && (
+              <button
+                onClick={() =>
+                  setExpandedExercise((prev) =>
+                    prev === ex.planExerciseId ? null : ex.planExerciseId
+                  )
+                }
+                className="flex w-full items-center gap-3 px-4 py-3.5 text-left"
+              >
+                {/* Status icon */}
                 <div className="shrink-0">
-                  <Dumbbell size={14} className="text-slate-600" />
+                  {isCompleted ? (
+                    <CheckCircle2 size={22} className="text-successGreen" strokeWidth={2} />
+                  ) : isNext ? (
+                    <ChevronRight size={22} className="text-successGreen" strokeWidth={2.5} />
+                  ) : (
+                    <Circle size={22} className="text-slate-600" strokeWidth={1.5} />
+                  )}
+                </div>
+
+                {/* Exercise info */}
+                <div className="min-w-0 flex-1">
+                  <p
+                    className={`truncate font-semibold leading-tight ${
+                      isNext ? 'text-slate-100' : isCompleted ? 'text-slate-400' : 'text-slate-400'
+                    }`}
+                  >
+                    {ex.exerciseName}
+                  </p>
+                  <p className="mt-0.5 text-xs text-slate-500">
+                    {ex.totalSets} {t('workout.setLabel').toLowerCase()}
+                    {ex.mode === 'reps' && ex.reps != null ? ` × ${ex.reps}` : ''}
+                    {ex.mode === 'time' && ex.durationSeconds != null
+                      ? ` × ${ex.durationSeconds}s`
+                      : ''}
+                    {ex.mode === 'pyramid' ? ` × ${t('exerciseConfig.pyramidMode').toLowerCase()}` : ''}
+                    {ex.weightKg != null ? ` · ${ex.weightKg} kg` : ''}
+                  </p>
+                </div>
+
+                {/* Progress badge */}
+                {isNext && (
+                  <div className="shrink-0 rounded-full bg-successGreen/15 px-2 py-0.5">
+                    <span className="text-[10px] font-bold text-successGreen">
+                      {t('workout.upNext').toUpperCase()}
+                    </span>
+                  </div>
+                )}
+                <ChevronDown
+                  size={18}
+                  className={`shrink-0 text-slate-500 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                />
+              </button>
+
+              {/* Per-set breakdown */}
+              {isExpanded && (
+                <div className="border-t border-bg-3/40 px-4 py-3 space-y-1.5">
+                  {Array.from({ length: ex.totalSets }, (_, i) => i + 1).map((setNum) => {
+                    const result = exSetResults[setNum];
+                    const isSetDone = !!result && !result.wasSkipped;
+                    const isSetSkipped = !!result && result.wasSkipped;
+
+                    // Target for this set (falls back for not-yet-done sets)
+                    let tgtReps = ex.mode === 'reps' ? ex.reps : null;
+                    let tgtDuration = ex.mode === 'time' ? ex.durationSeconds : null;
+                    let tgtWeight = ex.weightKg;
+                    if (ex.mode === 'pyramid' && ex.pyramidConfig) {
+                      const cfg = ex.pyramidConfig[setNum - 1] ?? ex.pyramidConfig[ex.pyramidConfig.length - 1];
+                      if (cfg) {
+                        tgtReps = cfg.mode === 'reps' ? (cfg.reps ?? null) : null;
+                        tgtDuration = cfg.mode === 'time' ? (cfg.duration_seconds ?? null) : null;
+                        tgtWeight = cfg.weight_kg;
+                      }
+                    }
+
+                    let detail: string;
+                    if (result) {
+                      if (result.repsDone != null) {
+                        detail = `${result.repsDone} ${t('workout.repsShort')}`;
+                      } else if (result.durationSecondsDone != null) {
+                        detail = formatTime(result.durationSecondsDone);
+                      } else {
+                        detail = '—';
+                      }
+                      if (result.weightKg != null) detail += ` · ${result.weightKg} kg`;
+                    } else {
+                      if (tgtReps != null) {
+                        detail = `${tgtReps} ${t('workout.repsShort')}`;
+                      } else if (tgtDuration != null) {
+                        detail = formatTime(tgtDuration);
+                      } else {
+                        detail = '—';
+                      }
+                      if (tgtWeight != null) detail += ` · ${tgtWeight} kg`;
+                    }
+
+                    return (
+                      <div
+                        key={setNum}
+                        className="flex items-center gap-2.5 rounded-lg bg-bg-0/40 px-3 py-2"
+                      >
+                        <div className="shrink-0">
+                          {isSetDone ? (
+                            <CheckCircle2 size={16} className="text-successGreen" strokeWidth={2} />
+                          ) : isSetSkipped ? (
+                            <X size={16} className="text-dangerRed" strokeWidth={2.5} />
+                          ) : (
+                            <Circle size={16} className="text-slate-600" strokeWidth={1.5} />
+                          )}
+                        </div>
+                        <span className={`flex-1 text-xs font-medium ${result ? 'text-slate-300' : 'text-slate-500'}`}>
+                          {t('workout.setNumber', { n: setNum })}
+                        </span>
+                        <span className={`text-xs font-semibold tabular-nums ${
+                          isSetSkipped ? 'text-dangerRed' : result ? 'text-slate-200' : 'text-slate-500'
+                        }`}>
+                          {isSetSkipped ? t('workout.setSkipped') : detail}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -149,14 +230,6 @@ export function ExerciseHubScreen({ onExitRequest }: Props) {
         className="sticky bottom-0 flex flex-col gap-3 bg-gradient-to-t from-bg-0 via-bg-0/95 to-transparent px-5 pb-8 pt-4"
         style={{ paddingBottom: 'max(2rem, env(safe-area-inset-bottom))' }}
       >
-        {nextEx && (
-          <div className="mb-1 text-center">
-            <p className="text-xs text-slate-500">
-              {t('workout.nextExercise')}:{' '}
-              <span className="font-semibold text-slate-300">{nextEx.exerciseName}</span>
-            </p>
-          </div>
-        )}
         <Button
           id="btn-start-next-exercise"
           variant="success"

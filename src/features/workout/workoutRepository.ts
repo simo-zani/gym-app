@@ -73,14 +73,28 @@ export const workoutRepository = {
     if (error) throw error;
   },
 
-  /** Marks the session as finished with ended_at and optional notes. */
-  async finishSession(sessionId: string, notes?: string): Promise<void> {
+  /**
+   * Marks the session as finished (ended_at). When `completed` is true (the user
+   * finished from the summary screen) it also stamps `completed_at` and stores
+   * the optional subjective `rating` (1..5).
+   */
+  async finishSession(
+    sessionId: string,
+    opts?: { notes?: string; rating?: number | null; completed?: boolean },
+  ): Promise<void> {
+    const now = new Date().toISOString();
+    const update: Record<string, unknown> = {
+      ended_at: now,
+      notes: opts?.notes?.trim() || null,
+    };
+    if (opts?.completed) {
+      update.completed_at = now;
+      update.rating = opts.rating ?? null;
+    }
+
     const { error } = await supabase
       .from('workout_sessions')
-      .update({
-        ended_at: new Date().toISOString(),
-        notes: notes?.trim() || null,
-      })
+      .update(update)
       .eq('id', sessionId);
     if (error) throw error;
   },
