@@ -118,7 +118,6 @@ export function WorkoutRunnerPage() {
   const isLoading =
     planQuery.isLoading ||
     exercisesQuery.isLoading ||
-    phase.kind === 'idle' ||
     phase.kind === 'starting';
 
   if (startError) {

@@ -259,6 +259,11 @@ export const useWorkoutStore = create<WorkoutStore>()(
           ? (overrides?.durationSecondsDone ?? ex.durationSeconds ?? 0)
           : null;
 
+        // Calculate total duration for this set (for skip detection)
+        const totalDuration = ex.mode === 'pyramid' && ex.pyramidConfig
+          ? (ex.pyramidConfig[currentSetNumber - 1]?.duration_seconds ?? 30)
+          : (ex.durationSeconds ?? 30);
+
         set({ saving: true });
 
         // Persist the set
