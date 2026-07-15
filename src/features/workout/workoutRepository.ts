@@ -1,11 +1,17 @@
 /**
- * Workout repository — isolates all Supabase calls for workout sessions and sets.
+ * Workout repository — offline-first (Phase 4).
  *
- * In Phase 4 this file will be replaced with an offline-first implementation
- * (Dexie outbox + sync) without touching the components.
+ * Every write lands in Dexie first (marked `_dirty`) and enqueues an outbox op;
+ * the sync engine flushes the outbox to Supabase when online. This is the path
+ * that must survive a gym with no signal, so it never awaits the network.
+ *
+ * The public interface is unchanged from Phase 3, so the workout UI components
+ * did not need to change.
  */
 
 import { supabase } from '@/lib/supabase';
+import { db } from '@/lib/db';
+import { runSync } from '@/lib/sync';
 import type { ExerciseMode } from '@/types/db';
 
 export interface CreateSessionParams {
@@ -25,29 +31,55 @@ export interface SaveSetParams {
   weightKg: number | null;
 }
 
+/** Reads the user id from the persisted session (no network — works offline). */
+async function offlineUserId(): Promise<string> {
+  const { data } = await supabase.auth.getSession();
+  const userId = data.session?.user?.id;
+  if (!userId) throw new Error('Utente non autenticato');
+  return userId;
+}
+
 export const workoutRepository = {
-  /** Creates a new workout_session row and returns its id. */
+  /** Creates a new workout session locally and returns its id. */
   async createSession({ planId, planName }: CreateSessionParams): Promise<string> {
-    const { data: userData } = await supabase.auth.getUser();
-    const userId = userData.user?.id;
-    if (!userId) throw new Error('Utente non autenticato');
+    const userId = await offlineUserId();
+    const id = crypto.randomUUID();
+    const now = new Date().toISOString();
 
-    const { data, error } = await supabase
-      .from('workout_sessions')
-      .insert({
-        user_id: userId,
-        plan_id: planId,
-        plan_name_snapshot: planName,
-        started_at: new Date().toISOString(),
-      })
-      .select('id')
-      .single();
+    const payload = {
+      id,
+      user_id: userId,
+      plan_id: planId,
+      plan_name_snapshot: planName,
+      started_at: now,
+    };
 
-    if (error) throw error;
-    return (data as { id: string }).id;
+    await db.transaction('rw', db.workout_sessions, db.outbox, async () => {
+      await db.workout_sessions.put({
+        ...payload,
+        ended_at: null,
+        completed_at: null,
+        rating: null,
+        notes: null,
+        created_at: now,
+        updated_at: now,
+        _dirty: 1,
+      });
+      await db.outbox.add({
+        entity: 'workout_sessions',
+        op: 'insert',
+        rowId: id,
+        payload,
+        createdAt: now,
+        attempts: 0,
+      });
+    });
+
+    void runSync();
+    return id;
   },
 
-  /** Inserts a single completed set into workout_session_sets. */
+  /** Records a single completed set locally. */
   async saveSet({
     sessionId,
     planExerciseId: _planExerciseId,
@@ -59,7 +91,11 @@ export const workoutRepository = {
     durationSecondsDone,
     weightKg,
   }: SaveSetParams): Promise<void> {
-    const { error } = await supabase.from('workout_session_sets').insert({
+    const id = crypto.randomUUID();
+    const now = new Date().toISOString();
+
+    const payload = {
+      id,
       session_id: sessionId,
       exercise_id: exerciseId,
       exercise_name_snapshot: exerciseName,
@@ -68,34 +104,63 @@ export const workoutRepository = {
       reps_done: mode === 'reps' ? repsDone : null,
       duration_seconds_done: mode === 'time' ? durationSecondsDone : null,
       weight_kg: weightKg,
-      completed_at: new Date().toISOString(),
+      rest_seconds_taken: null,
+      completed_at: now,
+    };
+
+    await db.transaction('rw', db.workout_session_sets, db.outbox, async () => {
+      await db.workout_session_sets.put({
+        ...payload,
+        created_at: now,
+        _dirty: 1,
+      });
+      await db.outbox.add({
+        entity: 'workout_session_sets',
+        op: 'insert',
+        rowId: id,
+        payload,
+        createdAt: now,
+        attempts: 0,
+      });
     });
-    if (error) throw error;
+
+    void runSync();
   },
 
   /**
-   * Marks the session as finished (ended_at). When `completed` is true (the user
-   * finished from the summary screen) it also stamps `completed_at` and stores
-   * the optional subjective `rating` (1..5).
+   * Marks the session finished. When `completed` is true (finished from the
+   * summary screen) it also stamps `completed_at` and the subjective `rating`.
    */
   async finishSession(
     sessionId: string,
     opts?: { notes?: string; rating?: number | null; completed?: boolean },
   ): Promise<void> {
     const now = new Date().toISOString();
-    const update: Record<string, unknown> = {
+    const patch: Record<string, unknown> = {
       ended_at: now,
       notes: opts?.notes?.trim() || null,
     };
     if (opts?.completed) {
-      update.completed_at = now;
-      update.rating = opts.rating ?? null;
+      patch.completed_at = now;
+      patch.rating = opts.rating ?? null;
     }
 
-    const { error } = await supabase
-      .from('workout_sessions')
-      .update(update)
-      .eq('id', sessionId);
-    if (error) throw error;
+    await db.transaction('rw', db.workout_sessions, db.outbox, async () => {
+      await db.workout_sessions.update(sessionId, {
+        ...patch,
+        updated_at: now,
+        _dirty: 1,
+      });
+      await db.outbox.add({
+        entity: 'workout_sessions',
+        op: 'update',
+        rowId: sessionId,
+        payload: patch,
+        createdAt: now,
+        attempts: 0,
+      });
+    });
+
+    void runSync();
   },
 };

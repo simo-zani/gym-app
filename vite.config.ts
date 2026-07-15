@@ -35,6 +35,35 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+        // SPA: serve the cached app shell for any in-app route when offline.
+        navigateFallback: '/index.html',
+        // Never let API calls fall back to the HTML shell.
+        navigateFallbackDenylist: [/^\/api/, /supabase\.co/],
+        runtimeCaching: [
+          {
+            // Google Fonts stylesheets + font files, so the installed app keeps
+            // its typography offline.
+            urlPattern: /^https:\/\/fonts\.(googleapis|gstatic)\.com\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'google-fonts',
+              expiration: { maxEntries: 20, maxAgeSeconds: 60 * 60 * 24 * 365 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          {
+            // Supabase REST/Auth: prefer network, fall back to a short-lived
+            // cache. Real offline data still comes from Dexie, this is a safety net.
+            urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'supabase-api',
+              networkTimeoutSeconds: 5,
+              expiration: { maxEntries: 50, maxAgeSeconds: 60 * 60 * 24 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+        ],
       },
     }),
   ],

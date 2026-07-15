@@ -1,5 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
+import { db } from '@/lib/db';
+import { pullPlans } from '@/lib/sync';
 import { computePlanDurationMinutes } from '@/lib/planDuration';
 import type {
   ExerciseMode,
@@ -8,6 +10,18 @@ import type {
   PyramidSet,
   WorkoutPlan,
 } from '@/types/db';
+
+/** Re-pulls the plan mirror into Dexie after an online edit (best-effort). */
+async function refreshPlanMirror(): Promise<void> {
+  const { data } = await supabase.auth.getSession();
+  const userId = data.session?.user?.id;
+  if (!userId) return;
+  try {
+    await pullPlans(userId);
+  } catch {
+    // Offline or transient: the mirror stays as-is until the next sync.
+  }
+}
 
 export const plansKeys = {
   all: ['plans'] as const,
@@ -23,46 +37,40 @@ export interface PlanListItem extends WorkoutPlan {
   estimatedMinutes: number;
 }
 
-interface RawItem {
-  id: string;
-  mode: ExerciseMode;
-  sets: number;
-  reps: number | null;
-  duration_seconds: number | null;
-  rest_seconds: number;
-  pyramid_config: PyramidSet[] | null;
-  exercise: { muscle_group: MuscleGroup | null } | null;
-}
-
-interface RawPlanWithItems extends WorkoutPlan {
-  items: RawItem[];
-}
+// Reads come from the Dexie mirror so they work offline. The sync engine keeps
+// the mirror fresh and invalidates these queries after each pull.
 
 export function usePlans() {
   return useQuery({
     queryKey: plansKeys.list,
     queryFn: async (): Promise<PlanListItem[]> => {
-      const { data, error } = await supabase
-        .from('workout_plans')
-        .select(
-          '*, items:workout_plan_exercises(id, mode, sets, reps, duration_seconds, rest_seconds, pyramid_config, exercise:exercises(muscle_group))'
-        )
-        .eq('is_archived', false)
-        .order('updated_at', { ascending: false });
-      if (error) throw error;
+      const [plans, allItems] = await Promise.all([
+        db.workout_plans.toArray(),
+        db.workout_plan_exercises.toArray(),
+      ]);
 
-      return (data as RawPlanWithItems[]).map((p) => {
-        const muscles = Array.from(
-          new Set(
-            p.items
-              .map((it) => it.exercise?.muscle_group)
-              .filter((m): m is MuscleGroup => Boolean(m)),
-          ),
-        );
-        const estimatedMinutes = computePlanDurationMinutes(p.items);
-        const { items, ...plan } = p;
-        return { ...plan, exerciseCount: items.length, muscles, estimatedMinutes };
-      });
+      const itemsByPlan = new Map<string, typeof allItems>();
+      for (const it of allItems) {
+        const arr = itemsByPlan.get(it.plan_id) ?? [];
+        arr.push(it);
+        itemsByPlan.set(it.plan_id, arr);
+      }
+
+      return plans
+        .filter((p) => !p.is_archived)
+        .sort((a, b) => b.updated_at.localeCompare(a.updated_at))
+        .map((p) => {
+          const items = itemsByPlan.get(p.id) ?? [];
+          const muscles = Array.from(
+            new Set(
+              items
+                .map((it) => it.exercise_snapshot?.muscle_group)
+                .filter((m): m is MuscleGroup => Boolean(m)),
+            ),
+          );
+          const estimatedMinutes = computePlanDurationMinutes(items);
+          return { ...p, exerciseCount: items.length, muscles, estimatedMinutes };
+        });
     },
   });
 }
@@ -72,13 +80,9 @@ export function usePlan(id: string | undefined) {
     queryKey: plansKeys.detail(id ?? ''),
     enabled: Boolean(id),
     queryFn: async (): Promise<WorkoutPlan> => {
-      const { data, error } = await supabase
-        .from('workout_plans')
-        .select('*')
-        .eq('id', id!)
-        .single();
-      if (error) throw error;
-      return data as WorkoutPlan;
+      const plan = await db.workout_plans.get(id!);
+      if (!plan) throw new Error('Scheda non trovata');
+      return plan;
     },
   });
 }
@@ -88,13 +92,16 @@ export function usePlanExercises(planId: string | undefined) {
     queryKey: plansKeys.exercises(planId ?? ''),
     enabled: Boolean(planId),
     queryFn: async (): Promise<PlanExerciseWithExercise[]> => {
-      const { data, error } = await supabase
-        .from('workout_plan_exercises')
-        .select('*, exercise:exercises(id, name, muscle_group)')
-        .eq('plan_id', planId!)
-        .order('position');
-      if (error) throw error;
-      return data as PlanExerciseWithExercise[];
+      const items = await db.workout_plan_exercises
+        .where('plan_id')
+        .equals(planId!)
+        .toArray();
+      return items
+        .sort((a, b) => a.position - b.position)
+        .map(({ exercise_snapshot, ...rest }) => ({
+          ...rest,
+          exercise: exercise_snapshot,
+        }));
     },
   });
 }
@@ -117,7 +124,10 @@ export function useCreatePlan() {
       if (error) throw error;
       return data as WorkoutPlan;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: plansKeys.all }),
+    onSuccess: async () => {
+      await refreshPlanMirror();
+      qc.invalidateQueries({ queryKey: plansKeys.all });
+    },
   });
 }
 
@@ -131,7 +141,10 @@ export function useUpdatePlan() {
       const { error } = await supabase.from('workout_plans').update(patch).eq('id', id);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: plansKeys.all }),
+    onSuccess: async () => {
+      await refreshPlanMirror();
+      qc.invalidateQueries({ queryKey: plansKeys.all });
+    },
   });
 }
 
@@ -145,7 +158,10 @@ export function useToggleFavorite() {
         .eq('id', id);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: plansKeys.all }),
+    onSuccess: async () => {
+      await refreshPlanMirror();
+      qc.invalidateQueries({ queryKey: plansKeys.all });
+    },
   });
 }
 
@@ -157,7 +173,10 @@ export function useDeletePlan() {
       const { error } = await supabase.from('workout_plans').delete().eq('id', id);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: plansKeys.all }),
+    onSuccess: async () => {
+      await refreshPlanMirror();
+      qc.invalidateQueries({ queryKey: plansKeys.all });
+    },
   });
 }
 
@@ -196,7 +215,10 @@ export function useDuplicatePlan() {
       }
       return newPlan as WorkoutPlan;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: plansKeys.all }),
+    onSuccess: async () => {
+      await refreshPlanMirror();
+      qc.invalidateQueries({ queryKey: plansKeys.all });
+    },
   });
 }
 
@@ -230,7 +252,8 @@ export function useAddPlanExercise(planId: string) {
         .insert({ ...input, plan_id: planId, position: count ?? 0 });
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: async () => {
+      await refreshPlanMirror();
       qc.invalidateQueries({ queryKey: plansKeys.exercises(planId) });
       qc.invalidateQueries({ queryKey: plansKeys.list });
     },
@@ -247,7 +270,8 @@ export function useUpdatePlanExercise(planId: string) {
         .eq('id', id);
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: async () => {
+      await refreshPlanMirror();
       qc.invalidateQueries({ queryKey: plansKeys.exercises(planId) });
       qc.invalidateQueries({ queryKey: plansKeys.list });
     },
@@ -261,7 +285,8 @@ export function useDeletePlanExercise(planId: string) {
       const { error } = await supabase.from('workout_plan_exercises').delete().eq('id', id);
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: async () => {
+      await refreshPlanMirror();
       qc.invalidateQueries({ queryKey: plansKeys.exercises(planId) });
       qc.invalidateQueries({ queryKey: plansKeys.list });
     },
@@ -285,7 +310,8 @@ export function useReorderPlanExercises(planId: string) {
         ),
       );
     },
-    onSuccess: () => {
+    onSuccess: async () => {
+      await refreshPlanMirror();
       qc.invalidateQueries({ queryKey: plansKeys.exercises(planId) });
       qc.invalidateQueries({ queryKey: plansKeys.list });
     },

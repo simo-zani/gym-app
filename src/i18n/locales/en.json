@@ -161,7 +161,31 @@
   "history": {
     "title": "History",
     "emptyState": "No history yet",
-    "emptyStateHint": "Workout history comes with workout mode (Phase 3) and progress tracking (Phase 5)."
+    "emptyStateHint": "Finish a workout and it will show up here.",
+    "sets": "sets",
+    "exercises": "exercises",
+    "duration": "duration",
+    "volume": "volume",
+    "minutesAbbr": "min",
+    "completed": "Completed",
+    "incomplete": "Stopped",
+    "detailTitle": "Workout detail",
+    "noSets": "No sets recorded",
+    "totalVolume": "Total volume",
+    "lastWorkout": "Last workout",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "daysAgo_one": "{{count}} day ago",
+    "daysAgo_other": "{{count}} days ago",
+    "neverTrained": "Never",
+    "totalWorkouts": "Total",
+    "last30": "Last 30 days",
+    "topMuscle": "Top group",
+    "noData": "—",
+    "activity": "Activity",
+    "less": "less",
+    "more": "more",
+    "workoutsUnit": "workouts"
   },
   "profile": {
     "title": "Profile",
@@ -266,6 +290,18 @@
     "notesLabel": "Session notes (optional)",
     "notesPlaceholder": "How did it feel? Any observations…",
     "finishAndSave": "Finish & save"
+  },
+  "sync": {
+    "title": "Sync",
+    "online": "Online",
+    "offline": "Offline",
+    "synced": "All synced",
+    "syncing": "Syncing…",
+    "pending_one": "{{count}} change to upload",
+    "pending_other": "{{count}} changes to upload",
+    "syncNow": "Sync now",
+    "lastSync": "Last sync: {{time}}",
+    "never": "never",
+    "offlineHint": "You are offline: changes will upload automatically when the connection is back."
   }
 }
-

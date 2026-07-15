@@ -161,7 +161,31 @@
   "history": {
     "title": "Storico",
     "emptyState": "Ancora niente storico",
-    "emptyStateHint": "Lo storico degli allenamenti arriva con la modalità workout (Fase 3) e i progressi (Fase 5)."
+    "emptyStateHint": "Completa un allenamento e lo ritrovi qui.",
+    "sets": "set",
+    "exercises": "esercizi",
+    "duration": "durata",
+    "volume": "volume",
+    "minutesAbbr": "min",
+    "completed": "Completato",
+    "incomplete": "Interrotto",
+    "detailTitle": "Dettaglio allenamento",
+    "noSets": "Nessun set registrato",
+    "totalVolume": "Volume totale",
+    "lastWorkout": "Ultimo allenamento",
+    "today": "Oggi",
+    "yesterday": "Ieri",
+    "daysAgo_one": "{{count}} giorno fa",
+    "daysAgo_other": "{{count}} giorni fa",
+    "neverTrained": "Mai",
+    "totalWorkouts": "Totali",
+    "last30": "Ultimi 30 giorni",
+    "topMuscle": "Gruppo top",
+    "noData": "—",
+    "activity": "Attività",
+    "less": "meno",
+    "more": "più",
+    "workoutsUnit": "allenamenti"
   },
   "profile": {
     "title": "Profilo",
@@ -266,6 +290,18 @@
     "notesLabel": "Note sessione (opzionale)",
     "notesPlaceholder": "Come ti sei sentito? Eventuali osservazioni…",
     "finishAndSave": "Termina e salva"
+  },
+  "sync": {
+    "title": "Sincronizzazione",
+    "online": "Online",
+    "offline": "Offline",
+    "synced": "Tutto sincronizzato",
+    "syncing": "Sincronizzazione in corso…",
+    "pending_one": "{{count}} modifica da inviare",
+    "pending_other": "{{count}} modifiche da inviare",
+    "syncNow": "Sincronizza ora",
+    "lastSync": "Ultima sincronizzazione: {{time}}",
+    "never": "mai",
+    "offlineHint": "Sei offline: le modifiche verranno inviate automaticamente al ritorno della connessione."
   }
 }
-

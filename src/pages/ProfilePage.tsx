@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/Button';
 import { Select } from '@/components/ui/Select';
 import { useAuth } from '@/features/auth/useAuth';
 import { useExercises } from '@/features/exercises/hooks';
+import { SyncStatusCard } from '@/features/sync/SyncStatusCard';
 
 export function ProfilePage() {
   const { t, i18n } = useTranslation();
@@ -54,6 +55,8 @@ export function ProfilePage() {
             </p>
           )}
         </div>
+
+        <SyncStatusCard />
 
         <div className="rounded-2xl border border-bg-2 bg-bg-1 p-5">
           <label className="text-sm text-slate-400">{t('profile.language')}</label>
