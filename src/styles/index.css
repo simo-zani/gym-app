@@ -30,6 +30,15 @@
   }
 }
 
+/* Horizontal scroll without a visible scrollbar (activity heatmap). */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 /* Premium Apple-Style Spring Animation Keyframes */
 @keyframes backdrop-fade-in {
   from {

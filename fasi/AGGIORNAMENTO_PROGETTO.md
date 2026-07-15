@@ -6,8 +6,8 @@
 
 ## Stato corrente
 
-**Fase attiva:** Fase 4 — Offline-first (non iniziata)
-**Ultimo aggiornamento:** 2026-06-29
+**Fase attiva:** Fase 4 completata + Fase 5 iniziata (Storico + statistiche)
+**Ultimo aggiornamento:** 2026-07-15
 
 ---
 
@@ -19,9 +19,10 @@
 | 1 — Fondamenta | ✅ Completa | 2026-06-25 | 2026-06-29 | Supabase live (URL: ecydsobgfryofiijkhkx), migrazioni 0001+0002 applicate, email confirm off |
 | 2 — CRUD esercizi & schede | ✅ Completa | 2026-06-25 | 2026-06-29 | Backend live; seed 858 esercizi wger; test E2E ok; deploy Vercel ok |
 | 2.5 — Traduzioni (i18n) | ✅ Completa | 2026-06-29 | 2026-06-29 | react-i18next + it/en.json; cambio lingua istantaneo da Impostazioni |
-| 3 — Modalità allenamento | ✅ Completa | 2026-06-29 | 2026-06-29 | Zustand store, timer drift-free, beep Web Audio, wake lock, riepilogo finale, route /run |
-| 4 — Offline-first | ⏸ Non iniziata | — | — | — |
-| 5 — Rifiniture | ⏸ Non iniziata | — | — | A piacere |
+| 3 — Modalità allenamento | ✅ Completa | 2026-06-29 | 2026-07-01 | Zustand store, timer drift-free, beep Web Audio, wake lock, riepilogo finale, route /run. Esteso con overhaul UI (vedi sotto) |
+| 3.5 — Overhaul UI workout | ✅ Completa | 2026-06-30 | 2026-07-01 | Grosso lavoro UI/UX non pianificato: exercise hub, warmup/cooldown, piramidi, skip tracking, rating sessione, riepiloghi espandibili, progress bar/ring, background timer, gesture native |
+| 4 — Offline-first | ✅ Completa (codice) | 2026-07-15 | 2026-07-15 | PWA + Dexie + sync engine. Manca solo test reale su iPhone |
+| 5 — Rifiniture | 🟡 In corso | 2026-07-15 | — | Fatti: §5.1 Storico (lista + dettaglio) e §5.2 statistiche (gruppo top, giorni da ultimo allenamento, heatmap stile GitHub scrollabile con anni dinamici) |
 | 6 — Distribuzione | ⏸ Non iniziata | — | — | Opzionale: APK/Play Store |
 
 Legenda: ⏸ Non iniziata · 🟡 In corso · ✅ Completa · 🐛 Bloccata
@@ -74,6 +75,34 @@ Decisioni prese in fase di pianificazione (qui per memoria, vedi anche `README.m
 
 > Formato: `YYYY-MM-DD — [Fase X] — Descrizione`
 
+- 2026-07-15 — [Fase 5] — **Storico + statistiche** (§5.1 e §5.2 parziale):
+  - **`HistoryPage`** ora funzionante (era placeholder): lista cronologica delle sessioni concluse (data, durata, n° set, n° esercizi, volume kg, emoji rating) letta da Dexie via `useLiveQuery` → funziona anche offline. Tap su una riga → `SessionDetailModal` con set raggruppati per esercizio + eventuali note. Filtra le sessioni con `ended_at` valorizzato.
+  - **`features/history/HistoryStats.tsx`** — widget sopra l'elenco:
+    - 3 tile: ultimo allenamento ("Oggi/Ieri/N giorni fa"), allenamenti ultimi 30 giorni, gruppo muscolare più allenato (badge colorato; ricavato incrociando `exercise_id` dei set con `db.exercises.muscle_group`).
+    - **Heatmap stile GitHub** (53 settimane ≈ 1 anno), lunedì-first: quadratino verde pieno se allenato quel giorno (niente gradazione — 1 scheda/giorno). Scrollabile in orizzontale con **scrollbar nascosta** (utility `.no-scrollbar` in `styles/index.css`), parte scrollata a destra (presente). Etichette mesi (3 lettere) con spazio extra tra i mesi. **Etichette anno dinamiche** sotto la griglia: ancorate al primo mese visibile dell'anno, con comportamento sticky-push (il nuovo anno arriva da destra e spinge fuori il precedente). Posizionamento in px aggiornato sullo scroll via `requestAnimationFrame` (non ri-renderizza le celle). Tap su un quadratino → tooltip con la data (mobile-friendly, non solo hover).
+  - i18n: namespace `history` esteso in it/en (stat, unità, mesi, ecc.).
+  - `tsc` e `build` verdi.
+- 2026-07-15 — [Fase 4] — **Offline-first implementato** (scope: schede leggibili+eseguibili offline + salvataggio allenamento offline; catalogo esercizi completo resta online per scelta esplicita — 858 esercizi offline sarebbero eccessivi). Cosa fatto:
+  - **`src/lib/db.ts`** — Dexie `gymapp` v1: tabelle `exercises` (solo subset referenziato dalle schede), `workout_plans`, `workout_plan_exercises` (con `exercise_snapshot` denormalizzato per render offline), `workout_sessions` + `workout_session_sets` (con flag `_dirty`), `outbox`, `meta`. Helper `getMeta/setMeta/clearLocalData`.
+  - **`src/lib/sync.ts`** — sync engine: `pullPlans` (full-replace mirror schede+esercizi referenziati), `pullSessions` (merge, non sovrascrive righe `_dirty` locali), `pushOutbox` (drena outbox in ordine di inserimento → sessione prima dei set), `runSync` (push+pull, guardia anti-concorrenza, no-op se offline), `syncNow`, `initSync` (listener `online`/visibilitychange), hook `useSyncStatus` (online/syncing/pending via `useLiveQuery`). Invalida `['plans']` dopo ogni pull.
+  - **`workoutRepository.ts`** — riscritto Dexie-first: ogni write va prima su Dexie (`_dirty=1`) + outbox, poi `void runSync()` non-bloccante. Interfaccia invariata → componenti workout non toccati. `user_id` letto da `getSession()` (no network, funziona offline).
+  - **`features/plans/hooks.ts`** — letture (`usePlans`/`usePlan`/`usePlanExercises`) ora da Dexie (funzionano offline); mutazioni scrivono su Supabase poi `refreshPlanMirror()` (re-pull) + invalidate. `usePlans` calcola muscoli/durata/conteggio dal mirror locale.
+  - **`SyncProvider`** (in `App`) — `initSync()` una volta; sync iniziale al login; `clearLocalData()` su logout o cambio utente (isolamento account).
+  - **`SyncStatusCard`** in Profilo — stato Online/Offline/Sincronizzazione/N in coda + ultima sync + pulsante "Sincronizza ora". Namespace i18n `sync` in it/en.
+  - **`vite.config.ts`** — workbox: `navigateFallback` SPA + denylist API, runtimeCaching Google Fonts (CacheFirst) e Supabase (NetworkFirst). Manifest/icone già presenti da prima.
+  - `tsc --noEmit` e `npm run build` verdi; SW generato (`dist/sw.js`, 20 entries precache). Bundle unico 887 kB (warning noto, code-splitting rimandato a Fase 5).
+  - **Ancora da fare per chiudere la fase**: test offline reale in browser (DevTools → Offline: esegui allenamento, verifica outbox, riconnetti → svuotamento) e test installazione/uso su iPhone. Vedi checklist in `04_fase4_offline_first.md`.
+  - **Stato salvataggio storico**: *scrittura* sessioni ora offline-first (Dexie+outbox→Supabase); *visualizzazione* storico (`HistoryPage`) ancora placeholder → Fase 5 §5.1.
+  - **Nota architetturale**: solo `workoutRepository.ts` era isolato come da piano; `exercises/hooks.ts` e `plans/hooks.ts` chiamavano Supabase direttamente negli hook TanStack. I plans sono stati riportati su Dexie; `exercises/hooks.ts` resta online (catalogo, per scelta di scope).
+- 2026-06-30 → 2026-07-01 — [Fase 3.5] — Overhaul UI/UX workout (non pianificato, esteso oltre la Fase 3 base). Commit principali:
+  - `87859df` workout runner: esercizi a tempo, modalità piramide, warmup/cooldown, progress bar, pause/resume, exercise hub, popup riepilogo recuperi
+  - `756c5fb` background timer support + miglioramenti UI/UX
+  - `210ed8a` overhaul completo con selezione esercizi e skip tracking
+  - `81d7500` timer fixes + exercise selection
+  - `240d3cf` polish progress bar/ring + cleanup plan editor
+  - `4d9174e` redesign overview allenamento, riepiloghi espandibili, rating sessione
+  - Extra style/gesture (`fa6886f`, `5b54584`, `8301467`, `2acbf7f`, `efef726`): disabilitati zoom/pinch/double-tap/long-press per feel nativo, safe-area top, glassmorphism bottom nav, search bar collapse
+  - Nuovi componenti workout: `ExerciseHubScreen`, `WarmupScreen`, `CooldownScreen`, `ExerciseProgressBar`, `useElapsedSeconds`
 - 2026-06-25 — [Fase 1] — Scaffolding progetto: Vite + React 18 + TS + Tailwind, routing (login/home protetta), AuthProvider Supabase (signIn/signUp/signOut), TanStack Query, UI primitives (Button/Input), AppShell. Migrazione SQL completa `supabase/migrations/0001_init.sql` (5 tabelle + trigger updated_at + RLS su tutte). `vercel.json` con rewrite SPA. `npm run build` e `tsc --noEmit` verdi.
 - 2026-06-29 — [Fase 3] — Modalità allenamento completa:
   - **Zustand store** (`useWorkoutStore.ts`) con state machine idle→starting→exercising/timed_running→resting→completed, persistita in sessionStorage per sopravvivere ai reload
@@ -141,8 +170,9 @@ Decisioni prese in fase di pianificazione (qui per memoria, vedi anche `README.m
 5. ✅ Test E2E Fase 2 superato (crea/modifica/elimina esercizi e schede, drag & drop ok)
 6. ✅ Repo GitHub creato + collegato a Vercel
 7. ✅ Deploy Vercel: https://gym-app-chi-rosy.vercel.app
+8. ✅ Fase 3 + overhaul UI workout (Fase 3.5) completati
 
-**⭐ Prossimo passo: Fase 3 — Modalità allenamento**
+**⭐ Prossimo passo: Fase 4 — Offline-first** (PWA/service worker, Dexie mirror, sync engine outbox, indicatore stato, test su iPhone). Da decidere lo scope: solo path critico workout+sessioni offline, oppure offline-first completo anche per CRUD schede/esercizi (richiede refactor degli hook TanStack che oggi chiamano Supabase direttamente).
 
 ---
 
