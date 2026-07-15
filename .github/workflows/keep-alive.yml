@@ -1,0 +1,42 @@
+name: Supabase keep-alive
+
+# Free-tier Supabase projects are paused after ~7 days of inactivity, which makes
+# the project subdomain stop resolving and every request (including login) fail
+# with "Load failed". This workflow pings the REST API on a schedule so the
+# project always counts as active and never pauses.
+
+on:
+  schedule:
+    # 07:00 UTC every Monday and Thursday → max ~4 days between pings, always
+    # well under the 7-day pause window. (GitHub cron is always UTC.)
+    - cron: '0 7 * * 1,4'
+  # Lets you trigger it by hand from the Actions tab to test it.
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase REST API
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON_KEY" ]; then
+            echo "::error::Missing SUPABASE_URL or SUPABASE_ANON_KEY repo secret."
+            exit 1
+          fi
+
+          # A trivial read against a global table. Enough to count as activity.
+          # -f: fail on HTTP >= 400 · -sS: quiet but still show errors.
+          http_code=$(curl -sS -o /dev/null -w '%{http_code}' \
+            "$SUPABASE_URL/rest/v1/exercises?select=id&limit=1" \
+            -H "apikey: $SUPABASE_ANON_KEY" \
+            -H "Authorization: Bearer $SUPABASE_ANON_KEY")
+
+          echo "HTTP $http_code"
+          if [ "$http_code" != "200" ]; then
+            echo "::error::Unexpected status $http_code — project may be paused or keys invalid."
+            exit 1
+          fi
+          echo "Supabase is awake ✅"
